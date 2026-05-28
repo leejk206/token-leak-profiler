@@ -191,5 +191,61 @@ def aggregate(
         )
 
 
+@app.command("count-tokens")
+def count_tokens(
+    tools: Path = typer.Option(
+        ..., "--tools", "-t",
+        exists=True,
+        help="JSON file of Anthropic-format tool definitions",
+    ),
+    output: Path = typer.Option(
+        Path(__file__).parent / "config" / "measurements.yaml",
+        "--output", "-o",
+        help="Target measurements.yaml (default: tlp/config/measurements.yaml)",
+    ),
+    model: str = typer.Option(
+        "claude-opus-4-7", "--model",
+        help="Anthropic model id used by count_tokens API",
+    ),
+    merge: bool = typer.Option(
+        False, "--merge",
+        help="Merge into existing measurements (default: overwrite)",
+    ),
+) -> None:
+    """Populate measurements.yaml via Anthropic count_tokens API."""
+    import json as _json
+    import os as _os
+
+    if not _os.environ.get("ANTHROPIC_API_KEY"):
+        typer.echo("ANTHROPIC_API_KEY not set; required for tlp count-tokens", err=True)
+        raise typer.Exit(1)
+
+    try:
+        import anthropic
+    except ImportError:
+        typer.echo("anthropic SDK not installed; uv sync --extra verify", err=True)
+        raise typer.Exit(1)
+
+    try:
+        tool_defs = _json.loads(tools.read_text())
+    except _json.JSONDecodeError as e:
+        typer.echo(f"Malformed tools JSON: {e}", err=True)
+        raise typer.Exit(1)
+
+    if not isinstance(tool_defs, list):
+        typer.echo("tools.json must be a list of tool definitions", err=True)
+        raise typer.Exit(1)
+
+    from tlp.measurements import count_tool_tokens, write_measurements
+
+    client = anthropic.Anthropic()
+    measurements = count_tool_tokens(client, model=model, tools=tool_defs)
+    write_measurements(output, measurements, model=model, merge=merge)
+
+    typer.echo(f"Wrote {len(measurements)} tool measurements to {output}")
+    for name, n in sorted(measurements.items()):
+        typer.echo(f"  {name}: {n}")
+
+
 if __name__ == "__main__":
     app()
