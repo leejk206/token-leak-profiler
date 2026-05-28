@@ -1,0 +1,4 @@
+{"type":"user","sessionId":"agg-normal","uuid":"u1","message":{"role":"user","content":"hi"}}
+{"type":"assistant","sessionId":"agg-normal","uuid":"a1","message":{"role":"assistant","id":"m1","content":[{"type":"text","text":"hello back."}],"usage":{"input_tokens":100,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"agg-normal","uuid":"u2","message":{"role":"user","content":"another short prompt"}}
+{"type":"assistant","sessionId":"agg-normal","uuid":"a2","message":{"role":"assistant","id":"m2","content":[{"type":"text","text":"reply"}],"usage":{"input_tokens":100,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}

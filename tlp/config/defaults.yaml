@@ -19,6 +19,8 @@ format_boilerplate:
 cache_miss_penalty:
   min_recreation_turns: 3
   min_avg_creation_tokens: 1000
+aggregate:
+  outlier_multiplier: 2.0
 report:
   findings_per_lever: 5
   min_confidence: mid
