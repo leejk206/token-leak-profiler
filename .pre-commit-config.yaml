@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: rules-self-application
+        name: rules-self-application (rule 5/6 enforcement)
+        entry: uv run pytest tests/test_rules_self_application.py -q
+        language: system
+        pass_filenames: false
+        files: ^(tlp/analyzers/|tests/test_rules_self_application\.py)
+        stages: [pre-commit]
+      - id: ruff
+        name: ruff
+        entry: uv run ruff check .
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

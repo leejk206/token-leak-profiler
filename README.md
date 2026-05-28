@@ -89,6 +89,19 @@ Pass via CLI: `uv run tlp analyze --measurements tlp/config/measurements.yaml <s
 
     uv run pytest
 
+## Contributing
+
+Install pre-commit hooks before your first commit:
+
+```bash
+uv sync --group dev
+uv run pre-commit install
+```
+
+The pre-commit gate enforces:
+- `tests/test_rules_self_application.py` (rules 5/6 — runs only when analyzer code changes)
+- `ruff check`
+
 ## License
 
 MIT (see LICENSE).
