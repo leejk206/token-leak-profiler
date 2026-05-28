@@ -1,6 +1,6 @@
 # tlp — Token Leak Profiler
 
-Classify wasted LLM tokens in Claude Code session transcripts by 6 leak levers
+Classify wasted LLM tokens in Claude Code session transcripts by 7 leak levers
 and get actionable suggestions for each leak.
 
 ## Install (dev)
@@ -15,7 +15,7 @@ Common flags:
 
     --format {table,json}        default: table
     --output PATH                write JSON to file
-    --analyzers a,b,c            run only these (default: all 6)
+    --analyzers a,b,c            run only these (default: all 7)
     --verify                     compare local tokenizer to anthropic API
     --min-confidence {low,mid,high}
     --strict                     abort on parser warnings

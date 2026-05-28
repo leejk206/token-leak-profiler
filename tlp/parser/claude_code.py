@@ -72,6 +72,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
 
     # Second pass: build turns, grouping consecutive assistant events with the
     # same `message.id` into a single Turn.
+    seen_message_ids: set[str] = set()
     i = 0
     while i < len(events):
         _, ev_type, event = events[i]
@@ -112,6 +113,13 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
                     grouped_usage = nxt_usage
                 j += 1
             blocks = _parse_assistant_content(grouped_content)
+            # Non-consecutive dedup: if this message.id was already seen in a
+            # previous (non-consecutive) turn, null out usage so it isn't
+            # counted again toward session totals.
+            if message_id and message_id in seen_message_ids:
+                grouped_usage = None
+            elif message_id:
+                seen_message_ids.add(message_id)
             usage = _parse_usage(grouped_usage)
             turns.append(Turn(
                 index=next_index, role="assistant",

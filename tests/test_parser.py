@@ -73,3 +73,27 @@ def test_parse_total_usage_not_double_counted():
     t = parse(fix)
     total_output = sum(tn.usage.output_tokens for tn in t.turns if tn.usage)
     assert total_output == 271
+
+
+def test_parse_dedupes_non_consecutive_same_message_id():
+    """A message.id that recurs after user/tool_result events (subagent tool
+    loop pattern) must have its usage counted exactly once, not per occurrence."""
+    import tempfile
+    fixture = """\
+{"type":"user","sessionId":"s-loop","uuid":"u1","message":{"role":"user","content":"start"}}
+{"type":"assistant","sessionId":"s-loop","uuid":"a1","message":{"role":"assistant","id":"msg_LOOP","content":[{"type":"tool_use","id":"tu_1","name":"read","input":{}}],"usage":{"input_tokens":100,"output_tokens":200,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"s-loop","uuid":"u2","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"tu_1","content":"r1"}]}}
+{"type":"assistant","sessionId":"s-loop","uuid":"a2","message":{"role":"assistant","id":"msg_LOOP","content":[{"type":"tool_use","id":"tu_2","name":"read","input":{}}],"usage":{"input_tokens":100,"output_tokens":200,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"s-loop","uuid":"u3","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"tu_2","content":"r2"}]}}
+{"type":"assistant","sessionId":"s-loop","uuid":"a3","message":{"role":"assistant","id":"msg_LOOP","content":[{"type":"text","text":"done"}],"usage":{"input_tokens":100,"output_tokens":200,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+"""
+    with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as f:
+        f.write(fixture)
+        path = Path(f.name)
+    try:
+        t = parse(path)
+        # Total output: 200 (counted ONCE), not 600 (3 occurrences × 200)
+        total_output = sum(tn.usage.output_tokens for tn in t.turns if tn.usage)
+        assert total_output == 200, f"Expected 200 (single message), got {total_output}"
+    finally:
+        path.unlink()

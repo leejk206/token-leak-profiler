@@ -72,7 +72,7 @@ def render_table(
             effective_total += r.leaked_tokens / 1_000_000 * blended_input_rate
         else:
             effective_total += cost
-        pct = (r.leaked_tokens / max(total_input + total_output, 1)) * 100
+        pct = (r.leaked_tokens / max(total_input + total_output + total_cache_read + total_cache_creation, 1)) * 100
         marker = " [red]ERR[/red]" if r.error else ""
         summary.add_row(
             r.lever.value + marker,

@@ -1,7 +1,7 @@
 [project]
 name = "tlp"
-version = "0.1.0"
-description = "Token Leak Profiler — classify wasted LLM tokens by 6 leak levers"
+version = "0.2.0"
+description = "Token Leak Profiler — classify wasted LLM tokens by 7 leak levers"
 requires-python = ">=3.11"
 dependencies = [
     "typer>=0.12",
