@@ -11,6 +11,7 @@ class LeverCategory(Enum):
     VERBOSE_TOOL_RESULTS = "verbose_tool_results"
     REASONING_OVERRUN = "reasoning_overrun"
     FORMAT_BOILERPLATE = "format_boilerplate"
+    CACHE_MISS_PENALTY = "cache_miss_penalty"
 
 
 BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]

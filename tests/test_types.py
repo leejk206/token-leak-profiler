@@ -49,6 +49,7 @@ def test_lever_category_values():
     assert {c.value for c in LeverCategory} == {
         "stale_context", "redundant_restatement", "tool_schema_bloat",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
+        "cache_miss_penalty",
     }
 
 

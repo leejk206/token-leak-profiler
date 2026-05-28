@@ -18,7 +18,7 @@ def test_analyze_json_output():
     assert r.returncode == 0, r.stderr
     data = json.loads(r.stdout)
     assert data["session_id"] == "s-bloat"
-    assert len(data["reports"]) == 6
+    assert len(data["reports"]) == 7
 
 
 def test_analyze_table_default():
@@ -53,6 +53,7 @@ def test_e2e_golden_bloat(tmp_path: Path):
     assert analyzer_names == {
         "stale_context", "redundant_restatement", "tool_schema_bloat",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
+        "cache_miss_penalty",
     }
     bloat = next(r for r in data["reports"] if r["analyzer"] == "tool_schema_bloat")
     assert bloat["leaked_tokens"] > 0
