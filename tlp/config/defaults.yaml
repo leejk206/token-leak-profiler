@@ -28,3 +28,6 @@ report:
 subagent_context_overdump:
   min_subagent_prompt_tokens: 5000
   baseline_subagent_prompt_tokens: 1000
+system_prompt_audit:
+  min_system_prompt_tokens: 15000
+  baseline_system_prompt_tokens: 10000

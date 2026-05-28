@@ -1,0 +1,6 @@
+{"type":"user","sessionId":"sys-aud","uuid":"u0","message":{"role":"user","content":"start"}}
+{"type":"assistant","sessionId":"sys-aud","uuid":"a0","message":{"role":"assistant","id":"m0","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":100,"output_tokens":2,"cache_read_input_tokens":0,"cache_creation_input_tokens":17000}}}
+{"type":"assistant","sessionId":"sys-aud","uuid":"a1","message":{"role":"assistant","id":"m1","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":10,"output_tokens":2,"cache_read_input_tokens":17000,"cache_creation_input_tokens":3000}}}
+{"type":"assistant","sessionId":"sys-aud","uuid":"a2","message":{"role":"assistant","id":"m2","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":10,"output_tokens":2,"cache_read_input_tokens":17000,"cache_creation_input_tokens":5000}}}
+{"type":"assistant","sessionId":"sys-aud","uuid":"a3","message":{"role":"assistant","id":"m3","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":10,"output_tokens":2,"cache_read_input_tokens":17000,"cache_creation_input_tokens":8000}}}
+{"type":"assistant","sessionId":"sys-aud","uuid":"a4","message":{"role":"assistant","id":"m4","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":10,"output_tokens":2,"cache_read_input_tokens":17000,"cache_creation_input_tokens":4000}}}
