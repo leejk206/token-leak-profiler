@@ -171,3 +171,56 @@ def test_json_no_longer_emits_total_effective_leak_cost_usd():
     data = json.loads(out)
     assert "total_effective_leak_cost_usd" not in data
     assert "effective_leak_cost_usd" in data
+
+
+def test_table_shows_two_separate_summary_lines():
+    buf = StringIO()
+    console = Console(file=buf, width=120, force_terminal=False, color_system=None)
+    trace = _trace()
+    reports = [
+        LeakReport(
+            analyzer="stale_context", lever=LeverCategory.STALE_CONTEXT,
+            leaked_tokens=20, leaked_cost_usd=0.0,
+            findings=[Finding("turn[0]", 20, "mid", "compress", {}, "confirmed")],
+        ),
+        LeakReport(
+            analyzer="reasoning_overrun", lever=LeverCategory.REASONING_OVERRUN,
+            leaked_tokens=80, leaked_cost_usd=0.0,
+            findings=[Finding("turn[5]", 80, "low", "review", {}, "signal")],
+        ),
+    ]
+    render_table(
+        trace, reports,
+        bucket_map={"stale_context": "input", "reasoning_overrun": "output"},
+        console=console,
+    )
+    output = buf.getvalue()
+    assert "Confirmed leak:" in output
+    assert "Attention signals:" in output
+    assert "Effective leak" in output
+    # "Estimated total leak" header should be GONE
+    assert "Estimated total leak" not in output
+
+
+def test_table_findings_section_shows_kind_column():
+    buf = StringIO()
+    console = Console(file=buf, width=120, force_terminal=False, color_system=None)
+    reports = [
+        LeakReport(
+            analyzer="reasoning_overrun", lever=LeverCategory.REASONING_OVERRUN,
+            leaked_tokens=100, leaked_cost_usd=0.0,
+            findings=[
+                Finding("turn[1]", 50, "mid", "dup detected", {}, "confirmed"),
+                Finding("turn[2]", 50, "low", "ratio high", {}, "signal"),
+            ],
+        ),
+    ]
+    render_table(
+        _trace(), reports,
+        bucket_map={"reasoning_overrun": "output"},
+        console=console,
+    )
+    output = buf.getvalue()
+    assert "kind" in output.lower()
+    assert "CONF" in output
+    assert "SIG" in output

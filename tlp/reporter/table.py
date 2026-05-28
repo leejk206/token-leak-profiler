@@ -42,29 +42,7 @@ def render_table(
     if verify_drift_pct is not None:
         console.print(f"[dim]tokenizer={tokenizer_mode}, verify drift {verify_drift_pct:+.1f}%[/dim]")
 
-    # Top-line table
-    summary = Table(box=box.SIMPLE_HEAVY, title="Leak by lever")
-    summary.add_column("lever", style="cyan")
-    summary.add_column("tokens", justify="right")
-    summary.add_column("cost ($)", justify="right")
-    summary.add_column("% of total", justify="right")
-    total_leaked_tokens = 0
-    total_leaked_cost = 0.0
-    for r in sorted(reports, key=lambda x: x.leaked_tokens, reverse=True):
-        bucket = bucket_map.get(r.analyzer, "input")
-        cost = trace.pricing.cost(r.leaked_tokens, bucket)
-        total_leaked_tokens += r.leaked_tokens
-        total_leaked_cost += cost
-        pct = (r.leaked_tokens / max(total_input + total_output, 1)) * 100
-        marker = " [red]ERR[/red]" if r.error else ""
-        summary.add_row(
-            r.lever.value + marker,
-            f"{r.leaked_tokens:,}",
-            f"{cost:.4f}",
-            f"{pct:.1f}%",
-        )
-    console.print(summary)
-
+    # Blended input rate
     total_input_like = total_input + total_cache_read + total_cache_creation
     blended_input_rate = (
         (trace.pricing.input_per_mtok * total_input
@@ -72,18 +50,46 @@ def render_table(
          + trace.pricing.cache_creation_per_mtok * total_cache_creation) / total_input_like
         if total_input_like > 0 else trace.pricing.input_per_mtok
     )
+
+    # Summary table: two columns (confirmed, signal) replace single tokens
+    summary = Table(box=box.SIMPLE_HEAVY, title="Leak by lever")
+    summary.add_column("lever", style="cyan")
+    summary.add_column("confirmed", justify="right")
+    summary.add_column("signal", justify="right")
+    summary.add_column("cost ($)", justify="right")
+    summary.add_column("% of total", justify="right")
+    confirmed_total = 0.0
+    signal_total = 0.0
     effective_total = 0.0
-    for r in reports:
+    for r in sorted(reports, key=lambda x: x.leaked_tokens, reverse=True):
         bucket = bucket_map.get(r.analyzer, "input")
+        cost = trace.pricing.cost(r.leaked_tokens, bucket)
+        confirmed_cost = trace.pricing.cost(r.confirmed_tokens, bucket)
+        signal_cost = trace.pricing.cost(r.signal_tokens, bucket)
+        confirmed_total += confirmed_cost
+        signal_total += signal_cost
         if bucket == "input":
             effective_total += r.leaked_tokens / 1_000_000 * blended_input_rate
         else:
-            effective_total += trace.pricing.cost(r.leaked_tokens, bucket)
+            effective_total += cost
+        pct = (r.leaked_tokens / max(total_input + total_output, 1)) * 100
+        marker = " [red]ERR[/red]" if r.error else ""
+        summary.add_row(
+            r.lever.value + marker,
+            f"{r.confirmed_tokens:,}",
+            f"{r.signal_tokens:,}",
+            f"{cost:.4f}",
+            f"{pct:.1f}%",
+        )
+    console.print(summary)
 
     console.print(
-        f"[bold]Estimated total leak:[/bold] "
-        f"{total_leaked_tokens:,} tok / ${total_leaked_cost:.4f} "
-        f"[dim](upper bound — fresh input rate, no cache discount)[/dim]"
+        f"[bold]Confirmed leak:[/bold] "
+        f"${confirmed_total:.4f} [dim](content-based measurement)[/dim]"
+    )
+    console.print(
+        f"[bold]Attention signals:[/bold] "
+        f"${signal_total:.4f} [dim](high thinking-ratio etc., not proven waste)[/dim]"
     )
     console.print(
         f"[bold]Effective leak (cache-adjusted):[/bold] "
@@ -91,7 +97,7 @@ def render_table(
         f"[dim](blended input rate ${blended_input_rate:.2f}/Mtok)[/dim]"
     )
 
-    # Findings per lever
+    # Findings per lever — add `kind` column
     for r in sorted(reports, key=lambda x: x.leaked_tokens, reverse=True):
         if r.error:
             console.rule(f"[yellow]{r.lever.value} — analyzer error: {r.error}[/yellow]")
@@ -102,8 +108,10 @@ def render_table(
         ftab = Table(box=box.MINIMAL, show_header=True)
         ftab.add_column("location", style="dim", overflow="fold")
         ftab.add_column("tokens", justify="right")
+        ftab.add_column("kind", justify="center")
         ftab.add_column("conf", justify="center")
         ftab.add_column("suggestion", overflow="fold")
         for f in r.findings[:findings_per_lever]:
-            ftab.add_row(f.location, f"{f.leaked_tokens:,}", f.confidence, f.suggestion)
+            kind_label = "CONF" if f.evidence_kind == "confirmed" else "SIG"
+            ftab.add_row(f.location, f"{f.leaked_tokens:,}", kind_label, f.confidence, f.suggestion)
         console.print(ftab)
