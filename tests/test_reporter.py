@@ -50,3 +50,37 @@ def test_json_handles_analyzer_error():
     out = render_json(_trace(), reports, bucket_map={"reasoning_overrun": "output"})
     data = json.loads(out)
     assert data["reports"][0]["error"] == "boom"
+
+
+from rich.console import Console
+from io import StringIO
+from tlp.reporter.table import render_table
+
+
+def test_table_includes_lever_rows_and_totals():
+    buf = StringIO()
+    console = Console(file=buf, width=120, force_terminal=False, color_system=None)
+    trace = _trace()
+    reports = [
+        LeakReport(
+            analyzer="stale_context", lever=LeverCategory.STALE_CONTEXT,
+            leaked_tokens=20, leaked_cost_usd=0.0,
+            findings=[Finding("turn[0]", 20, "mid", "compress this please", {})],
+        ),
+        LeakReport(
+            analyzer="tool_schema_bloat", lever=LeverCategory.TOOL_SCHEMA_BLOAT,
+            leaked_tokens=80, leaked_cost_usd=0.0,
+            findings=[Finding("tool_def[unused]", 80, "high", "drop tool", {})],
+        ),
+    ]
+    render_table(
+        trace, reports,
+        bucket_map={"stale_context": "input", "tool_schema_bloat": "input"},
+        console=console,
+    )
+    output = buf.getvalue()
+    assert "sess-x" in output
+    assert "stale_context" in output
+    assert "tool_schema_bloat" in output
+    assert "compress this please" in output
+    assert "drop tool" in output
