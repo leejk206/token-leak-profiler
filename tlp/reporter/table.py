@@ -84,12 +84,17 @@ def render_table(
     console.print(summary)
 
     console.print(
+        "[dim]Confirmed = actionable. Signals = measurements without "
+        "verified prescriptions; inspect before acting.[/dim]"
+    )
+    console.print(
         f"[bold]Confirmed leak:[/bold] "
-        f"${confirmed_total:.4f} [dim](content-based measurement)[/dim]"
+        f"${confirmed_total:.4f} [dim](actionable — direct prescription verified)[/dim]"
     )
     console.print(
         f"[bold]Attention signals:[/bold] "
-        f"${signal_total:.4f} [dim](high thinking-ratio etc., not proven waste)[/dim]"
+        f"${signal_total:.4f} [dim](measurements without verified prescriptions — "
+        f"inspect before acting)[/dim]"
     )
     console.print(
         f"[bold]Effective leak (cache-adjusted):[/bold] "

@@ -226,6 +226,28 @@ def test_table_findings_section_shows_kind_column():
     assert "SIG" in output
 
 
+def test_table_includes_v0_4_framing_line():
+    """v0.4.0: table output explicitly distinguishes actionable from signal."""
+    buf = StringIO()
+    console = Console(file=buf, width=120, force_terminal=False, color_system=None)
+    trace = _trace()
+    reports = [
+        LeakReport(
+            analyzer="stale_context", lever=LeverCategory.STALE_CONTEXT,
+            leaked_tokens=20, leaked_cost_usd=0.0,
+            findings=[Finding("turn[0]", 20, "low", "review", {}, "signal")],
+        ),
+    ]
+    render_table(
+        trace, reports,
+        bucket_map={"stale_context": "input"},
+        console=console,
+    )
+    output = buf.getvalue()
+    assert "actionable" in output.lower()
+    assert "inspect before acting" in output.lower()
+
+
 def test_table_pct_includes_cache_buckets_in_denominator():
     """Regression: cache_turnover_cost leak should not produce >100% column."""
     from tlp.types import (

@@ -1,7 +1,7 @@
 stale_context:
   stale_after_turns: 5
 redundant_restatement:
-  jaccard_threshold: 0.8
+  jaccard_threshold: 0.9
   ngram: 5
   num_perm: 256
 tool_schema_bloat: {}
