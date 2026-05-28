@@ -144,6 +144,10 @@ def aggregate(
         help="override aggregate.outlier_multiplier (default 2.0)",
     ),
     min_confidence: str = typer.Option("low", "--min-confidence", help="low | mid | high"),
+    include_subagents: bool = typer.Option(
+        False, "--include-subagents",
+        help="Include subagent transcripts (subagents/ dirs)",
+    ),
 ) -> None:
     """Aggregate multiple session transcripts with median-based outlier flagging."""
     if format not in ("table", "json"):
@@ -161,6 +165,7 @@ def aggregate(
             pricing_path=pricing_path,
             outlier_multiplier=outlier_multiplier,
             min_confidence=min_confidence,
+            include_subagents=include_subagents,
         )
     except FileNotFoundError as e:
         typer.echo(f"error: file not found: {e}", err=True)

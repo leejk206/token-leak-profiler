@@ -150,3 +150,17 @@ def test_aggregate_empty_dir_exit_0_no_sessions(tmp_path):
     r = _run("aggregate", str(tmp_path))
     assert r.returncode == 0
     assert "no sessions matched" in r.stdout.lower() or "no sessions matched" in r.stderr.lower()
+
+
+def test_cli_aggregate_include_subagents_flag(tmp_path):
+    """--include-subagents flag passes through to expand_paths."""
+    parent = tmp_path / "parent.jsonl"
+    parent.write_text(
+        '{"type":"user","sessionId":"p","uuid":"u","message":{"role":"user","content":"hi"}}\n'
+        '{"type":"assistant","sessionId":"p","uuid":"a","message":{"role":"assistant","id":"m","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":1,"output_tokens":1,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}\n'
+    )
+    r = _run("aggregate", str(tmp_path), "--format", "json", "--include-subagents")
+    assert r.returncode == 0
+    import json as json_module
+    data = json_module.loads(r.stdout)
+    assert data["session_count"] == 1

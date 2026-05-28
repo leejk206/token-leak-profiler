@@ -9,7 +9,7 @@ from tlp.aggregate.types import SessionRow, AggregateReport
 from tlp.types import LeakReport
 
 
-def expand_paths(paths: list[Path]) -> list[Path]:
+def expand_paths(paths: list[Path], *, include_subagents: bool = False) -> list[Path]:
     out: list[Path] = []
     for p in paths:
         if not p.exists():
@@ -18,7 +18,7 @@ def expand_paths(paths: list[Path]) -> list[Path]:
             for jsonl in sorted(p.rglob("*.jsonl")):
                 # Skip subagent sidechain transcripts; they share sessionId
                 # with their parent and contaminate cost totals.
-                if "subagents" in jsonl.parts:
+                if "subagents" in jsonl.parts and not include_subagents:
                     continue
                 out.append(jsonl)
         elif p.is_file() and p.suffix == ".jsonl":
@@ -33,10 +33,11 @@ def aggregate(
     pricing_path: Path | None = None,
     outlier_multiplier: float | None = None,
     min_confidence: str = "low",
+    include_subagents: bool = False,
 ) -> AggregateReport:
     config = load_defaults(config_path)
     pricing = load_pricing(pricing_path)
-    files = expand_paths(paths)
+    files = expand_paths(paths, include_subagents=include_subagents)
 
     multiplier = outlier_multiplier if outlier_multiplier is not None else float(
         config.get("aggregate", {}).get("outlier_multiplier", 2.0)

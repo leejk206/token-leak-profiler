@@ -147,6 +147,22 @@ def test_expand_paths_excludes_subagent_dirs(tmp_path):
     assert sub not in result
 
 
+def test_expand_paths_includes_subagents_when_flag_set(tmp_path):
+    from tlp.aggregate.run import expand_paths
+    parent = tmp_path / "parent.jsonl"
+    parent.write_text("{}\n")
+    sub_dir = tmp_path / "abc" / "subagents"
+    sub_dir.mkdir(parents=True)
+    sub = sub_dir / "agent-1.jsonl"
+    sub.write_text("{}\n")
+    # Default: excluded
+    out_default = expand_paths([tmp_path])
+    assert sub not in out_default
+    # With flag: included
+    out_inc = expand_paths([tmp_path], include_subagents=True)
+    assert sub in out_inc
+
+
 def test_aggregate_zero_median_still_flags_high_ratio_via_floor(tmp_path):
     """When most sessions have leak_ratio=0, an above-floor session still flags."""
     from tlp.aggregate.run import aggregate
