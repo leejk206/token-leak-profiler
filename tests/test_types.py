@@ -44,12 +44,13 @@ def test_turn_minimal_construction():
     assert t.role == "user"
 
 
-def test_lever_category_values():
-    assert LeverCategory.STALE_CONTEXT.value == "stale_context"
+def test_lever_category_v0_5_set():
     assert {c.value for c in LeverCategory} == {
         "stale_context", "redundant_restatement",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
         "cache_turnover_cost",
+        "subagent_context_overdump", "system_prompt_audit",
+        "roundtrip_inflation", "tool_result_repetition",
     }
 
 
@@ -93,3 +94,22 @@ def test_parsed_trace_label_explicit():
         label="my session",
     )
     assert t.label == "my session"
+
+
+def test_parsed_trace_is_subagent_default_false():
+    from tlp.types import ParsedTrace, PricingTable
+    t = ParsedTrace(
+        session_id="x", turns=(), tool_defs={},
+        pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+    )
+    assert t.is_subagent is False
+
+
+def test_parsed_trace_is_subagent_explicit_true():
+    from tlp.types import ParsedTrace, PricingTable
+    t = ParsedTrace(
+        session_id="x", turns=(), tool_defs={},
+        pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+        is_subagent=True,
+    )
+    assert t.is_subagent is True

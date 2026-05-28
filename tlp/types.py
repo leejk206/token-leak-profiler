@@ -11,6 +11,10 @@ class LeverCategory(Enum):
     REASONING_OVERRUN = "reasoning_overrun"
     FORMAT_BOILERPLATE = "format_boilerplate"
     CACHE_TURNOVER_COST = "cache_turnover_cost"
+    SUBAGENT_CONTEXT_OVERDUMP = "subagent_context_overdump"
+    SYSTEM_PROMPT_AUDIT = "system_prompt_audit"
+    ROUNDTRIP_INFLATION = "roundtrip_inflation"
+    TOOL_RESULT_REPETITION = "tool_result_repetition"
 
 
 BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]
@@ -78,6 +82,7 @@ class ParsedTrace:
     tool_defs: dict[str, ToolDef]
     pricing: PricingTable
     label: str | None = None
+    is_subagent: bool = False
 
 
 @dataclass
