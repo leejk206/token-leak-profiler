@@ -1,0 +1,11 @@
+# Tool → measured token count.
+# Optional. Empty by default. Populate by running Anthropic count_tokens API
+# against tool definitions and recording results here. Community can share.
+#
+# When mcp_server_overhead finds all tools of a server defined here, the
+# server's Finding promotes from evidence_kind="estimated" to "confirmed".
+
+tools: {}
+  # Example (uncomment + populate):
+  # mcp__playwright__browser_click: 187
+  # mcp__pal__chat: 412

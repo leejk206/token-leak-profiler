@@ -14,6 +14,7 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("mcp_server_overhead", {})
         est_per_tool = int(c.get("estimated_tokens_per_tool_def", 200))
+        measurements: dict[str, int] = config.get("__measurements", {})
 
         server_to_activated: defaultdict[str, set[str]] = defaultdict(set)
         for tool_name in trace.activated_tool_names:
@@ -47,7 +48,22 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
             if called_count > 0:
                 continue
             activated_count = len(activated_set)
-            leaked = activated_count * est_per_tool
+            # Determine measurement coverage for this server's tools
+            covered = [t for t in activated_set if t in measurements]
+            coverage = len(covered) / activated_count if activated_count else 0.0
+            if coverage == 1.0:
+                leaked = sum(measurements[t] for t in activated_set)
+                basis = "measured"
+                evidence_kind = "confirmed"
+            elif coverage > 0:
+                leaked = (sum(measurements[t] for t in covered)
+                          + (activated_count - len(covered)) * est_per_tool)
+                basis = "mixed"
+                evidence_kind = "estimated"
+            else:
+                leaked = activated_count * est_per_tool
+                basis = "heuristic"
+                evidence_kind = "estimated"
             total += leaked
             confidence = "high" if activated_count >= 10 else "mid"
             findings.append(Finding(
@@ -57,18 +73,17 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
                 suggestion=(
                     f"MCP server '{server}' has {activated_count} tools activated "
                     f"but 0 called this session. "
-                    f"Estimated overhead: {leaked} tok (heuristic 200 tok/tool, real range 100-1000). "
+                    f"Estimated overhead: {leaked} tok. "
                     f"Disable in settings (~/.claude/claude.json) if not needed."
                 ),
                 evidence={
                     "server_name": server,
                     "activated_tool_count": activated_count,
                     "called_count": 0,
-                    "estimated_tokens_per_tool_def": est_per_tool,
-                    "estimation_basis": "heuristic 200 tok/tool, real range 100-1000 (v0.6 spec §14)",
-                    "tokens_per_tool_range_estimate": [100, 1000],
+                    "measurement_basis": basis,
+                    "measurement_coverage_ratio": round(coverage, 3),
                 },
-                evidence_kind="estimated",
+                evidence_kind=evidence_kind,
             ))
 
         return LeakReport(

@@ -30,6 +30,18 @@ def load_defaults(override_path: Path | None = None) -> dict[str, Any]:
     return base
 
 
+_MEASUREMENTS_PATH = _HERE / "measurements.yaml"
+
+
+def load_measurements(override: Path | None = None) -> dict[str, int]:
+    path = override or _MEASUREMENTS_PATH
+    if not path.exists():
+        return {}
+    with path.open() as f:
+        data = yaml.safe_load(f) or {}
+    return {k: int(v) for k, v in (data.get("tools") or {}).items()}
+
+
 def load_pricing(override_path: Path | None = None, model: str | None = None) -> PricingTable:
     path = override_path or _PRICING_PATH
     with path.open() as f:
