@@ -31,9 +31,14 @@ def render_table(
     console.rule(f"[bold]Token Leak Profile — session {trace.session_id}")
     console.print(
         f"turns: {len(trace.turns)}  ·  "
-        f"input: {total_input:,}  ·  output: {total_output:,}  ·  "
+        f"input(fresh): {total_input:,}  ·  output: {total_output:,}  ·  "
         f"cost: ${total_cost:.4f}"
     )
+    if total_cache_read or total_cache_creation:
+        console.print(
+            f"[dim]cache_read: {total_cache_read:,}  ·  "
+            f"cache_creation: {total_cache_creation:,}[/dim]"
+        )
     if verify_drift_pct is not None:
         console.print(f"[dim]tokenizer={tokenizer_mode}, verify drift {verify_drift_pct:+.1f}%[/dim]")
 
@@ -59,10 +64,31 @@ def render_table(
             f"{pct:.1f}%",
         )
     console.print(summary)
+
+    total_input_like = total_input + total_cache_read + total_cache_creation
+    blended_input_rate = (
+        (trace.pricing.input_per_mtok * total_input
+         + trace.pricing.cache_read_per_mtok * total_cache_read
+         + trace.pricing.cache_creation_per_mtok * total_cache_creation) / total_input_like
+        if total_input_like > 0 else trace.pricing.input_per_mtok
+    )
+    effective_total = 0.0
+    for r in reports:
+        bucket = bucket_map.get(r.analyzer, "input")
+        if bucket == "input":
+            effective_total += r.leaked_tokens / 1_000_000 * blended_input_rate
+        else:
+            effective_total += trace.pricing.cost(r.leaked_tokens, bucket)
+
     console.print(
         f"[bold]Estimated total leak:[/bold] "
         f"{total_leaked_tokens:,} tok / ${total_leaked_cost:.4f} "
-        f"[dim](upper bound — levers may overlap)[/dim]"
+        f"[dim](upper bound — fresh input rate, no cache discount)[/dim]"
+    )
+    console.print(
+        f"[bold]Effective leak (cache-adjusted):[/bold] "
+        f"~${effective_total:.4f} "
+        f"[dim](blended input rate ${blended_input_rate:.2f}/Mtok)[/dim]"
     )
 
     # Findings per lever

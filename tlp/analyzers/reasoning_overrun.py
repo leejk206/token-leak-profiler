@@ -42,6 +42,18 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
                 continue
             thinking_tokens = sum(b.tokens for b in turn.blocks if b.kind == "thinking")
             text_tokens = sum(b.tokens for b in turn.blocks if b.kind == "text")
+            tool_use_tokens = sum(b.tokens for b in turn.blocks if b.kind == "tool_use")
+            has_thinking_block = any(b.kind == "thinking" for b in turn.blocks)
+
+            # Redacted thinking: blocks exist but content is server-encrypted (empty text + signature).
+            # The tokens are still billed in usage.output_tokens, so back them out from the delta.
+            thinking_redacted = False
+            if thinking_tokens == 0 and has_thinking_block and turn.usage:
+                estimated = turn.usage.output_tokens - text_tokens - tool_use_tokens
+                if estimated > 0:
+                    thinking_tokens = estimated
+                    thinking_redacted = True
+
             if thinking_tokens == 0:
                 continue
 
@@ -85,12 +97,14 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
             if leak <= 0:
                 continue
             total += leak
+            confidence = "low" if thinking_redacted else "mid"
+            est_note = " (estimated from usage delta)" if thinking_redacted else ""
             findings.append(Finding(
                 location=f"turn[{ti}]",
                 leaked_tokens=leak,
-                confidence="mid",
+                confidence=confidence,
                 suggestion=(
-                    f"thinking={thinking_tokens} tok vs output={text_tokens} tok, "
+                    f"thinking={thinking_tokens} tok{est_note} vs output={text_tokens} tok, "
                     f"{len(dup_pairs)} duplicate sentence pair(s) — lower max_thinking_tokens"
                 ),
                 evidence={
@@ -98,6 +112,7 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
                     "output_tokens": text_tokens,
                     "overrun_tokens": overrun,
                     "duplicate_pairs": dup_pairs[:5],
+                    "thinking_redacted": thinking_redacted,
                 },
             ))
 
