@@ -1,0 +1,12 @@
+{"type":"user","sessionId":"s-stale","uuid":"u1","message":{"role":"user","content":"Initial setup: configure xyzzy with parameter foo_bar_baz_qux."}}
+{"type":"assistant","sessionId":"s-stale","uuid":"a1","message":{"role":"assistant","content":[{"type":"text","text":"Configured xyzzy foo_bar_baz_qux."}],"usage":{"input_tokens":20,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"s-stale","uuid":"u2","message":{"role":"user","content":"Now talk about something completely different."}}
+{"type":"assistant","sessionId":"s-stale","uuid":"a2","message":{"role":"assistant","content":[{"type":"text","text":"Different topic content here."}],"usage":{"input_tokens":40,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"s-stale","uuid":"u3","message":{"role":"user","content":"Still unrelated."}}
+{"type":"assistant","sessionId":"s-stale","uuid":"a3","message":{"role":"assistant","content":[{"type":"text","text":"Still unrelated answer."}],"usage":{"input_tokens":60,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"s-stale","uuid":"u4","message":{"role":"user","content":"Unrelated 2."}}
+{"type":"assistant","sessionId":"s-stale","uuid":"a4","message":{"role":"assistant","content":[{"type":"text","text":"Unrelated 2 answer."}],"usage":{"input_tokens":80,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"s-stale","uuid":"u5","message":{"role":"user","content":"Unrelated 3."}}
+{"type":"assistant","sessionId":"s-stale","uuid":"a5","message":{"role":"assistant","content":[{"type":"text","text":"Unrelated 3 answer."}],"usage":{"input_tokens":100,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"s-stale","uuid":"u6","message":{"role":"user","content":"Unrelated 4."}}
+{"type":"assistant","sessionId":"s-stale","uuid":"a6","message":{"role":"assistant","content":[{"type":"text","text":"Unrelated 4 answer."}],"usage":{"input_tokens":120,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
