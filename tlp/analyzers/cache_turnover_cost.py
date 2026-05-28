@@ -1,7 +1,7 @@
 from __future__ import annotations
-import statistics
 from datetime import datetime
 from tlp.analyzers.base import BaseAnalyzer
+from tlp.analyzers._helpers import estimate_stable_prefix
 from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding
 
 
@@ -89,15 +89,7 @@ class CacheTurnoverCostAnalyzer(BaseAnalyzer):
 
         # Compute stable prefix estimate from all invalidation events' actual_cr
         all_actual_cr = [cr for _, _, cr in recoverable_events + architectural_events]
-        stable_prefix_est: int | None = None
-        if len(all_actual_cr) >= 2:
-            mean_cr = statistics.mean(all_actual_cr)
-            stdev_cr = statistics.stdev(all_actual_cr) if len(all_actual_cr) > 1 else 0.0
-            if mean_cr > 0 and (stdev_cr / mean_cr) < 0.01:
-                stable_prefix_est = int(mean_cr)
-        elif len(all_actual_cr) == 1:
-            # Single event — treat its actual_cr as the stable prefix estimate
-            stable_prefix_est = all_actual_cr[0] if all_actual_cr[0] > 0 else None
+        stable_prefix_est = estimate_stable_prefix(all_actual_cr)
 
         findings: list[Finding] = []
 
