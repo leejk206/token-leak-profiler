@@ -102,21 +102,23 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
                 continue
             total += leak
 
-            # Emit confirmed Finding for measured duplicate-sentence content
+            # v0.4.0: Demote .dup to signal-only. Thinking control by users in Claude Code
+            # is not currently verified, so duplicate detection alone cannot confirm waste.
             if dup_tokens > 0:
                 findings.append(Finding(
                     location=f"turn[{ti}].dup",
                     leaked_tokens=dup_tokens,
-                    confidence="mid",
+                    confidence="low",
                     suggestion=(
                         f"{len(dup_pairs)} duplicate sentence pair(s) in visible thinking "
-                        f"— remove repetition, lower max_thinking_tokens"
+                        f"— review needed; Claude Code thinking budget control by users "
+                        f"is not currently verified (see v0.4.0 spec)"
                     ),
                     evidence={
                         "duplicate_pairs": dup_pairs[:5],
                         "thinking_tokens": thinking_tokens,
                     },
-                    evidence_kind="confirmed",
+                    evidence_kind="signal",
                 ))
 
             # Emit signal Finding for ratio-only overrun (cannot prove waste —

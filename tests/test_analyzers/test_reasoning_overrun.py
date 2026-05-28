@@ -52,17 +52,18 @@ def test_redacted_thinking_estimated_from_usage_delta():
     assert r.findings[0].confidence == "low"
 
 
-def test_visible_thinking_duplicate_sentence_is_confirmed():
-    """When thinking content is visible AND duplicate-sentence detection fires,
-    finding is confirmed (real measurement of waste)."""
+def test_visible_thinking_duplicate_sentence_is_signal():
+    """v0.4.0: Duplicate-sentence detection is now signal-only, not confirmed.
+    Thinking budget control by users is not verified in Claude Code."""
     fix = Path(__file__).parent.parent / "fixtures" / "synthetic" / "visible_thinking_trace.jsonl"
     trace = parse(fix)
     r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
     assert r.leaked_tokens > 0
-    # At least one finding from the duplicate-sentence path
-    confirmed_findings = [f for f in r.findings if f.evidence_kind == "confirmed"]
-    assert len(confirmed_findings) >= 1
-    assert confirmed_findings[0].confidence == "mid"
+    # At least one finding from the duplicate-sentence path, now signal-only
+    signal_findings = [f for f in r.findings if f.evidence_kind == "signal"]
+    assert len(signal_findings) >= 1
+    assert any(".dup" in f.location for f in signal_findings)
+    assert all(f.confidence == "low" for f in signal_findings)
 
 
 def test_redacted_thinking_is_signal_not_confirmed():
@@ -83,17 +84,18 @@ def test_redacted_thinking_is_signal_not_confirmed():
 
 
 def test_visible_thinking_emits_both_dup_and_ratio_findings():
-    """When both duplicate-sentence detection AND overrun fire, we emit two
-    distinct Findings (one confirmed, one signal) instead of lumping them."""
+    """v0.4.0: Both .dup and .ratio are now signal-only (thinking control unverified).
+    When both duplicate-sentence detection AND overrun fire, we emit two distinct
+    signal Findings instead of lumping them."""
     fix = Path(__file__).parent.parent / "fixtures" / "synthetic" / "visible_thinking_split.jsonl"
     trace = parse(fix)
     r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
-    confirmed = [f for f in r.findings if f.evidence_kind == "confirmed"]
-    signal = [f for f in r.findings if f.evidence_kind == "signal"]
-    assert len(confirmed) >= 1, f"no confirmed findings; got {r.findings}"
-    assert len(signal) >= 1, f"no signal findings; got {r.findings}"
-    assert any(".dup" in f.location for f in confirmed)
-    assert any(".ratio" in f.location for f in signal)
+    # All findings are signal-only in v0.4.0
+    assert all(f.evidence_kind == "signal" for f in r.findings)
+    assert all(f.confidence == "low" for f in r.findings)
+    # Both .dup and .ratio variants still exist
+    assert any(".dup" in f.location for f in r.findings)
+    assert any(".ratio" in f.location for f in r.findings)
 
 
 def test_redacted_thinking_emits_only_ratio_finding():
