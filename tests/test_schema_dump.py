@@ -60,3 +60,32 @@ def test_render_json_parses_with_expected_keys():
     assert "event_types" in data
     assert "assistant_block_types" in data
     assert "usage_totals" in data
+
+
+def test_dump_captures_first_sample_per_skipped_type(tmp_path):
+    """Each skipped event type gets one raw sample in skipped_event_samples
+    so spec writers can see field names instead of guessing."""
+    fixture = tmp_path / "mixed.jsonl"
+    fixture.write_text(
+        '{"type":"user","sessionId":"x","uuid":"u1","message":{"role":"user","content":"hi"}}\n'
+        '{"type":"ai-title","sessionId":"x","aiTitle":"My Title"}\n'
+        '{"type":"ai-title","sessionId":"x","aiTitle":"Second Title (ignored)"}\n'
+        '{"type":"attachment","sessionId":"x","uuid":"att1","attachmentData":"..."}\n'
+    )
+    r = dump(fixture)
+    assert "ai-title" in r.skipped_event_samples
+    assert "attachment" in r.skipped_event_samples
+    # First sample wins — second ai-title shouldn't overwrite
+    assert r.skipped_event_samples["ai-title"].get("aiTitle") == "My Title"
+
+
+def test_render_text_shows_skipped_field_keys(tmp_path):
+    fixture = tmp_path / "ait.jsonl"
+    fixture.write_text(
+        '{"type":"ai-title","sessionId":"x","aiTitle":"T"}\n'
+    )
+    r = dump(fixture)
+    out = render_text(r)
+    assert "skipped event field samples" in out
+    assert "ai-title" in out
+    assert "aiTitle" in out   # the key name appears in keys list

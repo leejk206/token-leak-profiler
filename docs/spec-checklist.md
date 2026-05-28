@@ -3,6 +3,12 @@
 A reference checklist for writing or updating specs in this project. Cited from
 each spec's §2 Inputs section.
 
+> **Lesson from v1–v0.3**: the same defect — "spec assumed input field shape
+> without verifying" — recurred in four releases (`message.id` consecutive
+> grouping, `tools_changed` skip, `tools` definition absence, `ai-title`
+> wire format). Type-level discovery is not enough. Field-level inspection
+> of one raw event per relevant type is mandatory.
+
 ## Before writing data model
 
 1. Run `tlp schema-dump <transcript> --format json` against at least **three
@@ -11,6 +17,13 @@ each spec's §2 Inputs section.
 3. Skim each dump and answer: are there any event types or content block types
    that are not already handled, explicitly skipped, or accounted for in the
    data model? If yes, decide handling before writing model.
+4. **For every event type the spec will newly parse**, copy the
+   `skipped event field samples:` line from `tlp schema-dump` output and
+   inspect the listed keys. Write the parser against the actual field names
+   (e.g., real ai-title events have a top-level `aiTitle` field, not a
+   `message.content` wrapper — type counts alone don't reveal this, only the
+   field listing does). Type counts are necessary but not sufficient for
+   parser design; field listings are mandatory.
 
 ## Cache modeling is v1-critical (not v2)
 

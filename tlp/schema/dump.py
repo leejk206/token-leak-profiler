@@ -27,6 +27,7 @@ class SchemaReport:
     tools_called: list[str] = field(default_factory=list)
     usage_totals: dict[str, int] = field(default_factory=dict)
     skipped_event_types: dict[str, int] = field(default_factory=dict)
+    skipped_event_samples: dict[str, dict] = field(default_factory=dict)   # NEW
 
 
 def dump(path: Path) -> SchemaReport:
@@ -47,6 +48,7 @@ def dump(path: Path) -> SchemaReport:
         "cache_creation_input_tokens": 0,
     }
     skipped: Counter[str] = Counter()
+    skipped_samples: dict[str, dict] = {}
     seen_message_id_for_usage: set[str] = set()
 
     with path.open(encoding="utf-8") as f:
@@ -70,6 +72,9 @@ def dump(path: Path) -> SchemaReport:
             msg = event.get("message")
             if ev_type not in ("user", "assistant") or not isinstance(msg, dict):
                 skipped[ev_type] += 1
+                # NEW: capture first sample so spec writers can see field structure
+                if ev_type not in skipped_samples:
+                    skipped_samples[ev_type] = event
                 continue
 
             # Tool definitions
@@ -150,6 +155,7 @@ def dump(path: Path) -> SchemaReport:
         tools_called=sorted(tools_called),
         usage_totals=usage_totals,
         skipped_event_types=dict(skipped),
+        skipped_event_samples=skipped_samples,
     )
 
 
@@ -169,6 +175,12 @@ def render_text(r: SchemaReport) -> str:
     if r.skipped_event_types:
         skipped_summary = "  ".join(f"{k}({v})" for k, v in sorted(r.skipped_event_types.items(), key=lambda x: -x[1]))
         lines.append(f"skipped events:    {skipped_summary}")
+
+    if r.skipped_event_samples:
+        lines.append("skipped event field samples (one per type):")
+        for ev_type, sample in sorted(r.skipped_event_samples.items()):
+            keys = sorted(sample.keys())
+            lines.append(f"  {ev_type}: keys={keys}")
     return "\n".join(lines)
 
 
