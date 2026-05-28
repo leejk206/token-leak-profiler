@@ -97,3 +97,15 @@ def test_parse_dedupes_non_consecutive_same_message_id():
         assert total_output == 200, f"Expected 200 (single message), got {total_output}"
     finally:
         path.unlink()
+
+
+def test_parse_extracts_ai_title_label():
+    fix = Path(__file__).parent / "fixtures" / "synthetic" / "ai_title_trace.jsonl"
+    t = parse(fix)
+    assert t.label == "My Custom Session Title"
+
+
+def test_parse_label_none_when_no_ai_title():
+    """The minimal fixture has no ai-title event."""
+    t = parse(FIX)  # FIX is the existing minimal_trace.jsonl path constant
+    assert t.label is None

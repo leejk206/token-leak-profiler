@@ -27,6 +27,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
     tool_defs: dict[str, ToolDef] = {}
     warnings: list[str] = []
     next_index = 0
+    ai_title: str | None = None
 
     # First pass: parse + filter events. Claude Code streams a single assistant
     # response across multiple JSONL lines (one per content block) but each event
@@ -50,6 +51,15 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
 
         ev_type = event.get("type")
         msg = event.get("message")
+
+        # ai-title: extract first non-empty title text, then continue (skip)
+        if ev_type == "ai-title" and ai_title is None:
+            if isinstance(msg, dict):
+                content = msg.get("content")
+                if isinstance(content, str) and content.strip():
+                    ai_title = content.strip()
+            continue
+
         if ev_type not in ("user", "assistant") or not isinstance(msg, dict):
             warning_msg = f"line {line_no}: skipping type={ev_type!r}"
             if strict:
@@ -133,6 +143,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
         turns=tuple(turns),
         tool_defs=dict(tool_defs),
         pricing=pricing,
+        label=ai_title,
     )
 
 

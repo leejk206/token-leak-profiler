@@ -1,0 +1,3 @@
+{"type":"ai-title","sessionId":"s-title","uuid":"t1","message":{"role":"user","content":"My Custom Session Title"}}
+{"type":"user","sessionId":"s-title","uuid":"u1","message":{"role":"user","content":"hi"}}
+{"type":"assistant","sessionId":"s-title","uuid":"a1","message":{"role":"assistant","id":"m1","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":10,"output_tokens":2,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
