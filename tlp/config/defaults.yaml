@@ -25,3 +25,6 @@ aggregate:
 report:
   findings_per_lever: 5
   min_confidence: mid
+subagent_context_overdump:
+  min_subagent_prompt_tokens: 5000
+  baseline_subagent_prompt_tokens: 1000

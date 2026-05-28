@@ -7,6 +7,7 @@ from tlp.analyzers import (  # noqa: F401  (imports trigger registration)
     reasoning_overrun,
     format_boilerplate,
     cache_turnover_cost,
+    subagent_context_overdump,
 )
 
 __all__ = ["BaseAnalyzer", "registry"]
