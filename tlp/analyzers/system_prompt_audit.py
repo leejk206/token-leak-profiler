@@ -9,7 +9,7 @@ class SystemPromptAuditAnalyzer(BaseAnalyzer):
     lever = LeverCategory.SYSTEM_PROMPT_AUDIT
     usage_bucket = "input"
     prescription = None
-    measurement_basis = "measured"
+    measurement_basis = "heuristic"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         if trace.is_subagent:

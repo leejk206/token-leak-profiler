@@ -27,7 +27,7 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
     lever = LeverCategory.REASONING_OVERRUN
     usage_bucket = "output"
     prescription = None
-    measurement_basis = "measured"
+    measurement_basis = "heuristic"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("reasoning_overrun", {})

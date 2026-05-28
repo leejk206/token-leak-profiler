@@ -8,7 +8,7 @@ class RoundtripInflationAnalyzer(BaseAnalyzer):
     lever = LeverCategory.ROUNDTRIP_INFLATION
     usage_bucket = "input"
     prescription = None
-    measurement_basis = "measured"
+    measurement_basis = "heuristic"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("roundtrip_inflation", {})
