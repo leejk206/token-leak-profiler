@@ -104,12 +104,12 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
             # Distinguish *measured* leak (duplicate sentence pairs in visible
             # thinking) from *signal* (high thinking/output ratio with content
             # we can't see). The ratio alone doesn't prove waste — the thinking
-            # may have been useful and unobservable. Surface ratio-only findings
-            # at "low" so the default --min-confidence=mid filter hides them
-            # from the headline number while keeping them visible on demand.
+            # may have been useful and unobservable.
             if dup_tokens > 0:
+                evidence_kind = "confirmed"
                 confidence = "mid"
             else:
+                evidence_kind = "signal"
                 confidence = "low"
             est_note = " (estimated from usage delta, content not visible)" if thinking_redacted else ""
             findings.append(Finding(
@@ -130,6 +130,7 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
                     "duplicate_pairs": dup_pairs[:5],
                     "thinking_redacted": thinking_redacted,
                 },
+                evidence_kind=evidence_kind,
             ))
 
         return LeakReport(

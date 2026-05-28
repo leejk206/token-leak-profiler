@@ -50,3 +50,33 @@ def test_redacted_thinking_estimated_from_usage_delta():
     # Ratio-only findings (no duplicate-sentence evidence) are "low" confidence —
     # high thinking/output ratio is a signal to investigate, not proven waste.
     assert r.findings[0].confidence == "low"
+
+
+def test_visible_thinking_duplicate_sentence_is_confirmed():
+    """When thinking content is visible AND duplicate-sentence detection fires,
+    finding is confirmed (real measurement of waste)."""
+    fix = Path(__file__).parent.parent / "fixtures" / "synthetic" / "visible_thinking_trace.jsonl"
+    trace = parse(fix)
+    r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
+    assert r.leaked_tokens > 0
+    # At least one finding from the duplicate-sentence path
+    confirmed_findings = [f for f in r.findings if f.evidence_kind == "confirmed"]
+    assert len(confirmed_findings) >= 1
+    assert confirmed_findings[0].confidence == "mid"
+
+
+def test_redacted_thinking_is_signal_not_confirmed():
+    """Confirms evidence_kind is signal (not just confidence='low')."""
+    from tlp.types import ParsedTrace, Turn, Block, Usage, PricingTable
+    trace = ParsedTrace(
+        session_id="x", turns=(
+            Turn(0, "assistant", (
+                Block("thinking", "", None, None, None, 0),
+                Block("text", "Z.", None, None, None, 1),
+            ), Usage(input_tokens=10, output_tokens=500, cache_read_tokens=0, cache_creation_tokens=0)),
+        ),
+        tool_defs={}, pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+    )
+    r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
+    assert r.findings[0].evidence_kind == "signal"
+    assert r.findings[0].confidence == "low"
