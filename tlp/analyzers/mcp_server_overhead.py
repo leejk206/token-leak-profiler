@@ -8,6 +8,8 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
     name = "mcp_server_overhead"
     lever = LeverCategory.MCP_SERVER_OVERHEAD
     usage_bucket = "input"
+    prescription = "Disable unused MCP server in Claude Code settings (~/.claude/claude.json)"
+    measurement_basis = "estimated"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("mcp_server_overhead", {})

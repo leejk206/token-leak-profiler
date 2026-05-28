@@ -14,6 +14,8 @@ class VerboseToolResultsAnalyzer(BaseAnalyzer):
     name = "verbose_tool_results"
     lever = LeverCategory.VERBOSE_TOOL_RESULTS
     usage_bucket = "input"
+    prescription = None
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("verbose_tool_results", {})

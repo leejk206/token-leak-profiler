@@ -16,6 +16,8 @@ class StaleContextAnalyzer(BaseAnalyzer):
     name = "stale_context"
     lever = LeverCategory.STALE_CONTEXT
     usage_bucket = "input"
+    prescription = None
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         stale_after = int(config.get("stale_context", {}).get("stale_after_turns", 5))

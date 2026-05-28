@@ -8,6 +8,8 @@ class SystemPromptAuditAnalyzer(BaseAnalyzer):
     name = "system_prompt_audit"
     lever = LeverCategory.SYSTEM_PROMPT_AUDIT
     usage_bucket = "input"
+    prescription = None
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         if trace.is_subagent:

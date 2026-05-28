@@ -22,6 +22,7 @@ BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]
 TurnRole = Literal["user", "assistant", "tool_result"]
 UsageBucket = Literal["input", "output", "cache_read", "cache_creation"]
 Confidence = Literal["low", "mid", "high"]
+MeasurementBasis = Literal["measured", "estimated", "heuristic"]
 # EvidenceKind semantics:
 #   confirmed:  measurement + verified 1:1 prescription
 #   estimated:  model output (heuristic) + verified 1:1 prescription

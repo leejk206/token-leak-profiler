@@ -7,6 +7,8 @@ class SubagentContextOverdumpAnalyzer(BaseAnalyzer):
     name = "subagent_context_overdump"
     lever = LeverCategory.SUBAGENT_CONTEXT_OVERDUMP
     usage_bucket = "input"
+    prescription = "Narrow Agent dispatch prompt scope on next call"
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         if not trace.is_subagent:

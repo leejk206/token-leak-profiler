@@ -37,6 +37,8 @@ class CacheTurnoverCostAnalyzer(BaseAnalyzer):
     name = "cache_turnover_cost"
     lever = LeverCategory.CACHE_TURNOVER_COST
     usage_bucket = "cache_creation"
+    prescription = "Reduce idle time below 5 min (recoverable findings)"
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("cache_turnover_cost", {})

@@ -22,6 +22,8 @@ class RedundantRestatementAnalyzer(BaseAnalyzer):
     name = "redundant_restatement"
     lever = LeverCategory.REDUNDANT_RESTATEMENT
     usage_bucket = "input"
+    prescription = "Move duplicate text to system prompt"
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("redundant_restatement", {})

@@ -20,6 +20,8 @@ def test_subclass_auto_registers():
         name = "_dummy_a"
         lever = LeverCategory.STALE_CONTEXT
         usage_bucket = "input"
+        prescription = None
+        measurement_basis = "measured"
         def analyze(self, trace, config):
             return LeakReport(
                 analyzer=self.name, lever=self.lever,
@@ -36,6 +38,8 @@ def test_analyze_returns_leak_report(empty_trace):
         name = "_dummy_b"
         lever = LeverCategory.VERBOSE_TOOL_RESULTS
         usage_bucket = "output"
+        prescription = None
+        measurement_basis = "measured"
         def analyze(self, trace, config):
             return LeakReport(
                 analyzer=self.name, lever=self.lever,
@@ -52,6 +56,8 @@ def test_duplicate_name_raises():
         name = "_dummy_c"
         lever = LeverCategory.STALE_CONTEXT
         usage_bucket = "input"
+        prescription = None
+        measurement_basis = "measured"
         def analyze(self, trace, config):
             return LeakReport(analyzer=self.name, lever=self.lever, leaked_tokens=0, leaked_cost_usd=0.0, findings=[])
 
@@ -60,7 +66,52 @@ def test_duplicate_name_raises():
             name = "_dummy_c"
             lever = LeverCategory.STALE_CONTEXT
             usage_bucket = "input"
+            prescription = None
+            measurement_basis = "measured"
             def analyze(self, trace, config):
                 return LeakReport(analyzer=self.name, lever=self.lever, leaked_tokens=0, leaked_cost_usd=0.0, findings=[])
 
     registry.unregister("_dummy_c")
+
+
+def test_subclass_missing_prescription_raises():
+    from tlp.analyzers.base import BaseAnalyzer
+    from tlp.types import LeverCategory, LeakReport
+    with pytest.raises(TypeError, match="prescription"):
+        class _BadA(BaseAnalyzer):
+            name = "_bad_a"
+            lever = LeverCategory.STALE_CONTEXT
+            usage_bucket = "input"
+            measurement_basis = "measured"
+            def analyze(self, trace, config):
+                return LeakReport(analyzer=self.name, lever=self.lever,
+                                  leaked_tokens=0, leaked_cost_usd=0.0, findings=[])
+
+
+def test_subclass_missing_measurement_basis_raises():
+    from tlp.analyzers.base import BaseAnalyzer
+    from tlp.types import LeverCategory, LeakReport
+    with pytest.raises(TypeError, match="measurement_basis"):
+        class _BadB(BaseAnalyzer):
+            name = "_bad_b"
+            lever = LeverCategory.STALE_CONTEXT
+            usage_bucket = "input"
+            prescription = "do x"
+            def analyze(self, trace, config):
+                return LeakReport(analyzer=self.name, lever=self.lever,
+                                  leaked_tokens=0, leaked_cost_usd=0.0, findings=[])
+
+
+def test_subclass_invalid_measurement_basis_raises():
+    from tlp.analyzers.base import BaseAnalyzer
+    from tlp.types import LeverCategory, LeakReport
+    with pytest.raises(TypeError, match="measurement_basis"):
+        class _BadC(BaseAnalyzer):
+            name = "_bad_c"
+            lever = LeverCategory.STALE_CONTEXT
+            usage_bucket = "input"
+            prescription = "do x"
+            measurement_basis = "bogus"
+            def analyze(self, trace, config):
+                return LeakReport(analyzer=self.name, lever=self.lever,
+                                  leaked_tokens=0, leaked_cost_usd=0.0, findings=[])

@@ -9,6 +9,8 @@ class ToolResultRepetitionAnalyzer(BaseAnalyzer):
     name = "tool_result_repetition"
     lever = LeverCategory.TOOL_RESULT_REPETITION
     usage_bucket = "input"
+    prescription = None
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("tool_result_repetition", {})

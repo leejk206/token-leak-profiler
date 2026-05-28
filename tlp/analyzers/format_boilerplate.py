@@ -25,6 +25,8 @@ class FormatBoilerplateAnalyzer(BaseAnalyzer):
     name = "format_boilerplate"
     lever = LeverCategory.FORMAT_BOILERPLATE
     usage_bucket = "output"
+    prescription = "Add 'no preamble' to system prompt or stop sequence"
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("format_boilerplate", {})
