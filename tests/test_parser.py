@@ -169,7 +169,8 @@ def test_parse_default_is_subagent_false():
 
 
 def test_parse_collects_deferred_tools_delta_addedNames():
-    import tempfile, json as json_module
+    import tempfile
+    import json as json_module
     events = [
         {"type": "user", "sessionId": "x", "uuid": "u1",
          "attachment": {"type": "deferred_tools_delta",

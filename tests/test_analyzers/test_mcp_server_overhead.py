@@ -20,7 +20,8 @@ def test_flags_unused_mcp_server():
 
 
 def test_no_finding_when_called_at_least_once():
-    import tempfile, json as json_module
+    import tempfile
+    import json as json_module
     events = [
         {"type":"user","sessionId":"x","uuid":"u1",
          "attachment":{"type":"deferred_tools_delta","addedNames":["mcp__demo__a","mcp__demo__b"]},
@@ -50,7 +51,8 @@ def test_no_finding_when_no_activations():
 
 
 def test_non_mcp_tools_ignored():
-    import tempfile, json as json_module
+    import tempfile
+    import json as json_module
     events = [
         {"type":"user","sessionId":"x","uuid":"u1",
          "attachment":{"type":"deferred_tools_delta","addedNames":["Bash","TaskUpdate","Edit"]},

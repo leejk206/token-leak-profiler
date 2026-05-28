@@ -32,11 +32,11 @@ sessions first:
 
 See `docs/spec-checklist.md` for the full pre-spec workflow.
 
-## Levers (10)
+## Levers (11)
 
-v0.5.0 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/2026-05-21-token-frugality): 5/6 covered, 1 deferred (MCP server activation → v0.6).
+v0.6.0 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/2026-05-21-token-frugality): **6/6 (full coverage)**.
 
-### Confirmed leak (4) — actionable, direct prescription verified
+### Confirmed leak (5) — actionable, direct prescription verified
 
 | name | bucket | what it catches | prescription |
 |---|---|---|---|
@@ -44,6 +44,7 @@ v0.5.0 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/202
 | cache_turnover_cost (recoverable) | cache_creation | TTL idle expiry (gap ≥ 300s) | reduce idle time |
 | redundant_restatement | input | near-duplicate text blocks (jaccard ≥ 0.9) | move to system prompt |
 | subagent_context_overdump | input | subagent dispatch prompt > 5k tok | narrow scope on next dispatch |
+| mcp_server_overhead | input | activated MCP server with 0 calls this session | disable in settings (~/.claude/claude.json) |
 
 ### Signal-only (6) — measurement, prescription unverified
 
