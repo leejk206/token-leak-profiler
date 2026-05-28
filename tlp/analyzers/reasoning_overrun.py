@@ -101,37 +101,46 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
             if leak <= 0:
                 continue
             total += leak
-            # Distinguish *measured* leak (duplicate sentence pairs in visible
-            # thinking) from *signal* (high thinking/output ratio with content
-            # we can't see). The ratio alone doesn't prove waste — the thinking
-            # may have been useful and unobservable.
+
+            # Emit confirmed Finding for measured duplicate-sentence content
             if dup_tokens > 0:
-                evidence_kind = "confirmed"
-                confidence = "mid"
-            else:
-                evidence_kind = "signal"
-                confidence = "low"
-            est_note = " (estimated from usage delta, content not visible)" if thinking_redacted else ""
-            findings.append(Finding(
-                location=f"turn[{ti}]",
-                leaked_tokens=leak,
-                confidence=confidence,
-                suggestion=(
-                    f"thinking={thinking_tokens} tok{est_note} vs productive={productive_output} tok "
-                    f"(text={text_tokens}, tool_use={tool_use_tokens}), "
-                    f"{len(dup_pairs)} duplicate sentence pair(s) — lower max_thinking_tokens"
-                ),
-                evidence={
-                    "thinking_tokens": thinking_tokens,
-                    "text_tokens": text_tokens,
-                    "tool_use_tokens": tool_use_tokens,
-                    "productive_output_tokens": productive_output,
-                    "overrun_tokens": overrun,
-                    "duplicate_pairs": dup_pairs[:5],
-                    "thinking_redacted": thinking_redacted,
-                },
-                evidence_kind=evidence_kind,
-            ))
+                findings.append(Finding(
+                    location=f"turn[{ti}].dup",
+                    leaked_tokens=dup_tokens,
+                    confidence="mid",
+                    suggestion=(
+                        f"{len(dup_pairs)} duplicate sentence pair(s) in visible thinking "
+                        f"— remove repetition, lower max_thinking_tokens"
+                    ),
+                    evidence={
+                        "duplicate_pairs": dup_pairs[:5],
+                        "thinking_tokens": thinking_tokens,
+                    },
+                    evidence_kind="confirmed",
+                ))
+
+            # Emit signal Finding for ratio-only overrun (cannot prove waste —
+            # the thinking content may have been useful and unobservable)
+            if overrun > 0:
+                est_note = " (estimated from usage delta, content not visible)" if thinking_redacted else ""
+                findings.append(Finding(
+                    location=f"turn[{ti}].ratio",
+                    leaked_tokens=overrun,
+                    confidence="low",
+                    suggestion=(
+                        f"thinking={thinking_tokens} tok{est_note} vs productive={productive_output} "
+                        f"(ratio {thinking_tokens/max(productive_output,1):.1f}×) — review necessary"
+                    ),
+                    evidence={
+                        "thinking_tokens": thinking_tokens,
+                        "text_tokens": text_tokens,
+                        "tool_use_tokens": tool_use_tokens,
+                        "productive_output_tokens": productive_output,
+                        "overrun_tokens": overrun,
+                        "thinking_redacted": thinking_redacted,
+                    },
+                    evidence_kind="signal",
+                ))
 
         return LeakReport(
             analyzer=self.name, lever=self.lever,

@@ -80,3 +80,36 @@ def test_redacted_thinking_is_signal_not_confirmed():
     r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
     assert r.findings[0].evidence_kind == "signal"
     assert r.findings[0].confidence == "low"
+
+
+def test_visible_thinking_emits_both_dup_and_ratio_findings():
+    """When both duplicate-sentence detection AND overrun fire, we emit two
+    distinct Findings (one confirmed, one signal) instead of lumping them."""
+    fix = Path(__file__).parent.parent / "fixtures" / "synthetic" / "visible_thinking_split.jsonl"
+    trace = parse(fix)
+    r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
+    confirmed = [f for f in r.findings if f.evidence_kind == "confirmed"]
+    signal = [f for f in r.findings if f.evidence_kind == "signal"]
+    assert len(confirmed) >= 1, f"no confirmed findings; got {r.findings}"
+    assert len(signal) >= 1, f"no signal findings; got {r.findings}"
+    assert any(".dup" in f.location for f in confirmed)
+    assert any(".ratio" in f.location for f in signal)
+
+
+def test_redacted_thinking_emits_only_ratio_finding():
+    """Redacted thinking has no visible content → no duplicate detection.
+    Only the ratio path fires → exactly one signal finding."""
+    from tlp.types import ParsedTrace, Turn, Block, Usage, PricingTable
+    trace = ParsedTrace(
+        session_id="x", turns=(
+            Turn(0, "assistant", (
+                Block("thinking", "", None, None, None, 0),
+                Block("text", "Z.", None, None, None, 1),
+            ), Usage(input_tokens=10, output_tokens=500, cache_read_tokens=0, cache_creation_tokens=0)),
+        ),
+        tool_defs={}, pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+    )
+    r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
+    assert len(r.findings) == 1
+    assert r.findings[0].evidence_kind == "signal"
+    assert ".ratio" in r.findings[0].location
