@@ -180,7 +180,7 @@ class Finding:
 
 ### 5.3 tool_schema_bloat  (bucket: input)
 - `trace.tool_defs` 토큰 합 vs 실제 turn에서 호출된 `tool_name` 집합의 정의 토큰.
-- 호출 안 된 정의 = bloat. 누수 토큰 = (안 쓰인 정의 토큰) × (turn 수)  (스키마는 매 turn 재발송 가정; cache_creation/cache_read는 reporter에서 보정).
+- 호출 안 된 정의 = bloat. 누수 토큰 = (안 쓰인 정의 토큰) × (assistant turn 수). 스키마는 매 assistant 호출마다 재발송 가정. Prompt caching 보정은 v2 (현재는 cache hit 여부 무시하고 input 버킷에 가산).
 - Finding: "툴 X,Y,Z는 전 세션 0회 호출 → 정의 제거 후보 (-N tok/turn)".
 
 ### 5.4 verbose_tool_results  (bucket: input)
@@ -199,7 +199,7 @@ class Finding:
 - 모든 assistant text block의 첫·마지막 K(기본 80) 토큰에서 다른 turn과 공통 prefix/suffix를 LCS로 추출.
 - 3턴 이상에 동일 prefix/suffix가 등장하면 boilerplate.
 - 누수 = boilerplate 토큰 × 등장 횟수 (첫 1회는 제외).
-- Finding: "응답 머리말 '알겠습니다, ...'가 12회 반복 → 시스템 프롬프트로 흡수".
+- Finding: "응답 머리말 '알겠습니다, ...'가 12회 반복 (총 X tok) → 시스템 프롬프트에 'no preamble' 지시 추가 또는 stop sequence로 컷".
 
 ## 6. CLI Surface
 
