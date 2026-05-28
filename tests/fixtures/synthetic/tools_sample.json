@@ -1,0 +1,24 @@
+[
+  {
+    "name": "mcp__demo__simple",
+    "description": "A simple demo tool",
+    "input_schema": {
+      "type": "object",
+      "properties": {"x": {"type": "string"}},
+      "required": ["x"]
+    }
+  },
+  {
+    "name": "mcp__demo__complex",
+    "description": "A more elaborate demo tool with multiple parameters",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "query": {"type": "string", "description": "search query"},
+        "limit": {"type": "integer", "default": 10},
+        "filters": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["query"]
+    }
+  }
+]
