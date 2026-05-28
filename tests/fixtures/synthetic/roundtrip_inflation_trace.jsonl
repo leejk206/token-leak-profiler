@@ -1,0 +1,10 @@
+{"type":"user","sessionId":"rt","uuid":"u1","message":{"role":"user","content":"ok"}}
+{"type":"assistant","sessionId":"rt","uuid":"a1","message":{"role":"assistant","id":"m1","content":[{"type":"text","text":"response 1"}],"usage":{"input_tokens":10,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"rt","uuid":"u2","message":{"role":"user","content":"yes"}}
+{"type":"assistant","sessionId":"rt","uuid":"a2","message":{"role":"assistant","id":"m2","content":[{"type":"text","text":"response 2"}],"usage":{"input_tokens":15,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"rt","uuid":"u3","message":{"role":"user","content":"1"}}
+{"type":"assistant","sessionId":"rt","uuid":"a3","message":{"role":"assistant","id":"m3","content":[{"type":"text","text":"response 3"}],"usage":{"input_tokens":20,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"rt","uuid":"u4","message":{"role":"user","content":"go"}}
+{"type":"assistant","sessionId":"rt","uuid":"a4","message":{"role":"assistant","id":"m4","content":[{"type":"text","text":"response 4"}],"usage":{"input_tokens":25,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"type":"user","sessionId":"rt","uuid":"u5","message":{"role":"user","content":"k"}}
+{"type":"assistant","sessionId":"rt","uuid":"a5","message":{"role":"assistant","id":"m5","content":[{"type":"text","text":"response 5"}],"usage":{"input_tokens":30,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
