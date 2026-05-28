@@ -166,3 +166,28 @@ def test_parse_default_is_subagent_false():
     """Regular minimal trace has no isSidechain."""
     t = parse(FIX)
     assert t.is_subagent is False
+
+
+def test_parse_collects_deferred_tools_delta_addedNames():
+    import tempfile, json as json_module
+    events = [
+        {"type": "user", "sessionId": "x", "uuid": "u1",
+         "attachment": {"type": "deferred_tools_delta",
+                        "addedNames": ["mcp__demo__a", "mcp__demo__b", "Bash"]},
+         "message": {"role": "user", "content": "hi"}},
+        {"type": "assistant", "sessionId": "x", "uuid": "a1",
+         "message": {"role": "assistant", "id": "m1",
+                     "content": [{"type": "text", "text": "ok"}],
+                     "usage": {"input_tokens": 1, "output_tokens": 1,
+                               "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}}},
+    ]
+    with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as f:
+        for e in events:
+            f.write(json_module.dumps(e) + "\n")
+        path = Path(f.name)
+    try:
+        t = parse(path)
+        assert "mcp__demo__a" in t.activated_tool_names
+        assert "Bash" in t.activated_tool_names
+    finally:
+        path.unlink()

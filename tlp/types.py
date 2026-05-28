@@ -15,6 +15,7 @@ class LeverCategory(Enum):
     SYSTEM_PROMPT_AUDIT = "system_prompt_audit"
     ROUNDTRIP_INFLATION = "roundtrip_inflation"
     TOOL_RESULT_REPETITION = "tool_result_repetition"
+    MCP_SERVER_OVERHEAD = "mcp_server_overhead"
 
 
 BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]
@@ -83,6 +84,7 @@ class ParsedTrace:
     pricing: PricingTable
     label: str | None = None
     is_subagent: bool = False
+    activated_tool_names: frozenset[str] = field(default_factory=frozenset)
 
 
 @dataclass

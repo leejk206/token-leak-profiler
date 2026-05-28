@@ -29,6 +29,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
     next_index = 0
     ai_title: str | None = None
     is_subagent: bool = False
+    activated_names: set[str] = set()
 
     # First pass: parse + filter events. Claude Code streams a single assistant
     # response across multiple JSONL lines (one per content block) but each event
@@ -52,6 +53,12 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
 
         if event.get("isSidechain") is True or event.get("agentId"):
             is_subagent = True
+
+        attachment = event.get("attachment")
+        if isinstance(attachment, dict) and attachment.get("type") == "deferred_tools_delta":
+            added = attachment.get("addedNames")
+            if isinstance(added, list):
+                activated_names.update(str(n) for n in added)
 
         ev_type = event.get("type")
         # tools_changed events are real assistant messages with usage; normalize
@@ -162,6 +169,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
         pricing=pricing,
         label=ai_title,
         is_subagent=is_subagent,
+        activated_tool_names=frozenset(activated_names),
     )
 
 

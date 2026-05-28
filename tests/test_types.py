@@ -44,13 +44,14 @@ def test_turn_minimal_construction():
     assert t.role == "user"
 
 
-def test_lever_category_v0_5_set():
+def test_lever_category_v0_6_set():
     assert {c.value for c in LeverCategory} == {
         "stale_context", "redundant_restatement",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
         "cache_turnover_cost",
         "subagent_context_overdump", "system_prompt_audit",
         "roundtrip_inflation", "tool_result_repetition",
+        "mcp_server_overhead",
     }
 
 
@@ -113,3 +114,22 @@ def test_parsed_trace_is_subagent_explicit_true():
         is_subagent=True,
     )
     assert t.is_subagent is True
+
+
+def test_parsed_trace_activated_tool_names_default_empty():
+    from tlp.types import ParsedTrace, PricingTable
+    t = ParsedTrace(
+        session_id="x", turns=(), tool_defs={},
+        pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+    )
+    assert t.activated_tool_names == frozenset()
+
+
+def test_parsed_trace_activated_tool_names_explicit():
+    from tlp.types import ParsedTrace, PricingTable
+    t = ParsedTrace(
+        session_id="x", turns=(), tool_defs={},
+        pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+        activated_tool_names=frozenset({"mcp__demo__a", "mcp__demo__b"}),
+    )
+    assert "mcp__demo__a" in t.activated_tool_names
