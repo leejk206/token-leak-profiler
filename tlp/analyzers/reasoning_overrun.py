@@ -97,7 +97,9 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
             if leak <= 0:
                 continue
             total += leak
-            confidence = "low" if thinking_redacted else "mid"
+            # Redacted estimates still come from usage.output_tokens (real measurement),
+            # so "mid" — not "low". Low would imply the number itself is shaky.
+            confidence = "mid"
             est_note = " (estimated from usage delta)" if thinking_redacted else ""
             findings.append(Finding(
                 location=f"turn[{ti}]",

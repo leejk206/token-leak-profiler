@@ -47,4 +47,6 @@ def test_redacted_thinking_estimated_from_usage_delta():
     r = ReasoningOverrunAnalyzer().analyze(trace, load_defaults())
     assert r.leaked_tokens > 0
     assert r.findings[0].evidence["thinking_redacted"] is True
-    assert r.findings[0].confidence == "low"
+    # Confidence "mid" because the token count itself is measured (from usage.output_tokens);
+    # only the content is hidden.
+    assert r.findings[0].confidence == "mid"
