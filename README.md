@@ -11,6 +11,10 @@ and get actionable suggestions for each leak.
 
     uv run tlp analyze ~/.claude/projects/<slug>/<session>.jsonl
 
+Aggregate multiple sessions in a project directory:
+
+    uv run tlp aggregate ~/.claude/projects/<slug>/
+
 Common flags:
 
     --format {table,json}        default: table
