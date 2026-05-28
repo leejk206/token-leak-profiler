@@ -101,10 +101,17 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
             if leak <= 0:
                 continue
             total += leak
-            # Redacted estimates still come from usage.output_tokens (real measurement),
-            # so "mid" — not "low". Low would imply the number itself is shaky.
-            confidence = "mid"
-            est_note = " (estimated from usage delta)" if thinking_redacted else ""
+            # Distinguish *measured* leak (duplicate sentence pairs in visible
+            # thinking) from *signal* (high thinking/output ratio with content
+            # we can't see). The ratio alone doesn't prove waste — the thinking
+            # may have been useful and unobservable. Surface ratio-only findings
+            # at "low" so the default --min-confidence=mid filter hides them
+            # from the headline number while keeping them visible on demand.
+            if dup_tokens > 0:
+                confidence = "mid"
+            else:
+                confidence = "low"
+            est_note = " (estimated from usage delta, content not visible)" if thinking_redacted else ""
             findings.append(Finding(
                 location=f"turn[{ti}]",
                 leaked_tokens=leak,
