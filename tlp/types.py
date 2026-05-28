@@ -77,6 +77,7 @@ class ParsedTrace:
     turns: tuple[Turn, ...]
     tool_defs: dict[str, ToolDef]
     pricing: PricingTable
+    label: str | None = None
 
 
 @dataclass

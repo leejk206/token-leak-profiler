@@ -74,3 +74,22 @@ def test_pricing_table_per_token():
     assert p.cost(1_000_000, "input") == pytest.approx(3.0)
     assert p.cost(500_000, "output") == pytest.approx(7.5)
     assert p.cost(0, "input") == 0.0
+
+
+def test_parsed_trace_label_default_none():
+    from tlp.types import ParsedTrace, PricingTable
+    t = ParsedTrace(
+        session_id="x", turns=(), tool_defs={},
+        pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+    )
+    assert t.label is None
+
+
+def test_parsed_trace_label_explicit():
+    from tlp.types import ParsedTrace, PricingTable
+    t = ParsedTrace(
+        session_id="x", turns=(), tool_defs={},
+        pricing=PricingTable(3.0, 15.0, 0.3, 3.75),
+        label="my session",
+    )
+    assert t.label == "my session"
