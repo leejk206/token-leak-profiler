@@ -87,6 +87,7 @@ class FormatBoilerplateAnalyzer(BaseAnalyzer):
                     f"add 'no preamble' instruction to system prompt or use stop sequence"
                 ),
                 evidence={"pattern": common, "repetitions": cnt, "locations": example_locs},
+                evidence_kind="confirmed",
             ))
 
         for sseed, cnt in suffix_buckets.items():
@@ -115,6 +116,7 @@ class FormatBoilerplateAnalyzer(BaseAnalyzer):
                     f"add 'no trailing summary' instruction or stop sequence"
                 ),
                 evidence={"pattern": common, "repetitions": cnt, "locations": example_locs},
+                evidence_kind="confirmed",
             ))
 
         findings.sort(key=lambda f: f.leaked_tokens, reverse=True)

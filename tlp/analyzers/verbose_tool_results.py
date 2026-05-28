@@ -57,6 +57,7 @@ class VerboseToolResultsAnalyzer(BaseAnalyzer):
                             "citation_ratio": round(citation_ratio, 3),
                             "result_tokens": b.tokens,
                         },
+                        evidence_kind="confirmed",
                     ))
 
         return LeakReport(

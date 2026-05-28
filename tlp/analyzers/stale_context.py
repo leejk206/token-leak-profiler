@@ -55,6 +55,7 @@ class StaleContextAnalyzer(BaseAnalyzer):
                             f"({trailing} turns ago) — compress or drop"
                         ),
                         evidence={"last_ref_turn": last_ref, "trailing_turns": trailing},
+                        evidence_kind="confirmed",
                     ))
 
         return LeakReport(

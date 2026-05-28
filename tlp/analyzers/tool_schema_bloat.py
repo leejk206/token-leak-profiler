@@ -41,6 +41,7 @@ class ToolSchemaBloatAnalyzer(BaseAnalyzer):
                 ),
                 evidence={"tool_name": name, "per_turn_tokens": td.tokens,
                           "assistant_turns": assistant_turns},
+                evidence_kind="confirmed",
             ))
 
         # Sort findings by leaked_tokens desc

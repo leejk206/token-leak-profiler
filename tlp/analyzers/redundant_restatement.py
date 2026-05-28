@@ -68,6 +68,7 @@ class RedundantRestatementAnalyzer(BaseAnalyzer):
                     confidence="high" if jacc >= 0.95 else "mid",
                     suggestion=f"near-duplicate of {earlier} (jaccard={jacc:.2f}) — drop or move to system prompt",
                     evidence={"duplicate_of": earlier, "jaccard": round(jacc, 3)},
+                    evidence_kind="confirmed",
                 ))
 
         return LeakReport(
