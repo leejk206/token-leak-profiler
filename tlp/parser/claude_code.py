@@ -28,6 +28,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
     warnings: list[str] = []
     next_index = 0
     ai_title: str | None = None
+    is_subagent: bool = False
 
     # First pass: parse + filter events. Claude Code streams a single assistant
     # response across multiple JSONL lines (one per content block) but each event
@@ -48,6 +49,9 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
 
         if not session_id:
             session_id = event.get("sessionId", "") or session_id
+
+        if event.get("isSidechain") is True or event.get("agentId"):
+            is_subagent = True
 
         ev_type = event.get("type")
         # tools_changed events are real assistant messages with usage; normalize
@@ -157,6 +161,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
         tool_defs=dict(tool_defs),
         pricing=pricing,
         label=ai_title,
+        is_subagent=is_subagent,
     )
 
 

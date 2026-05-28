@@ -137,3 +137,31 @@ def test_parse_ai_title_works_on_top_level_field_format():
         assert t.label == "Real Format Title"
     finally:
         path.unlink()
+
+
+def test_parse_detects_subagent_via_isSidechain():
+    """Subagent transcripts have isSidechain=True. ParsedTrace.is_subagent must reflect."""
+    import tempfile, json as json_module
+    fixture = (
+        json_module.dumps({"parentUuid": None, "isSidechain": True, "agentId": "agent-xyz", "type": "user",
+                           "message": {"role": "user", "content": "do task X"}}) + "\n"
+        + json_module.dumps({"isSidechain": True, "type": "assistant",
+                             "message": {"role": "assistant", "id": "m1",
+                                         "content": [{"type": "text", "text": "ok"}],
+                                         "usage": {"input_tokens": 5, "output_tokens": 2,
+                                                   "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}}}) + "\n"
+    )
+    with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as f:
+        f.write(fixture)
+        path = Path(f.name)
+    try:
+        t = parse(path)
+        assert t.is_subagent is True
+    finally:
+        path.unlink()
+
+
+def test_parse_default_is_subagent_false():
+    """Regular minimal trace has no isSidechain."""
+    t = parse(FIX)
+    assert t.is_subagent is False
