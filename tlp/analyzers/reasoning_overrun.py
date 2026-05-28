@@ -57,10 +57,14 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
             if thinking_tokens == 0:
                 continue
 
-            # Overrun: thinking >> text
+            # Overrun: thinking >> productive output. Tool calls are productive
+            # output (an Edit/Bash/Write is a real action), so include them in
+            # the denominator. Without this, every tool-only response trips this
+            # lever regardless of how reasonable the thinking-to-action ratio is.
+            productive_output = text_tokens + tool_use_tokens
             overrun = 0
-            if thinking_tokens > ratio * max(text_tokens, 1):
-                overrun = thinking_tokens - int(ratio * max(text_tokens, 1))
+            if thinking_tokens > ratio * max(productive_output, 1):
+                overrun = thinking_tokens - int(ratio * max(productive_output, 1))
 
             # Redundant sentences within thinking
             dup_tokens = 0
@@ -106,12 +110,15 @@ class ReasoningOverrunAnalyzer(BaseAnalyzer):
                 leaked_tokens=leak,
                 confidence=confidence,
                 suggestion=(
-                    f"thinking={thinking_tokens} tok{est_note} vs output={text_tokens} tok, "
+                    f"thinking={thinking_tokens} tok{est_note} vs productive={productive_output} tok "
+                    f"(text={text_tokens}, tool_use={tool_use_tokens}), "
                     f"{len(dup_pairs)} duplicate sentence pair(s) — lower max_thinking_tokens"
                 ),
                 evidence={
                     "thinking_tokens": thinking_tokens,
-                    "output_tokens": text_tokens,
+                    "text_tokens": text_tokens,
+                    "tool_use_tokens": tool_use_tokens,
+                    "productive_output_tokens": productive_output,
                     "overrun_tokens": overrun,
                     "duplicate_pairs": dup_pairs[:5],
                     "thinking_redacted": thinking_redacted,

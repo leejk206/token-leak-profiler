@@ -28,6 +28,12 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
     warnings: list[str] = []
     next_index = 0
 
+    # First pass: parse + filter events. Claude Code streams a single assistant
+    # response across multiple JSONL lines (one per content block) but each event
+    # repeats the same `usage`. Grouping by `message.id` is required to avoid
+    # token double-counting and to keep thinking blocks bundled with the
+    # text/tool_use blocks that share their message.
+    events: list[tuple[int, str, dict]] = []  # (line_no, ev_type, event)
     for raw_line, line_no in _iter_lines(path):
         try:
             event = json.loads(raw_line)
@@ -52,8 +58,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
             logging.warning(warning_msg)
             continue
 
-        # Tool definitions can appear nested in assistant messages (system_tools)
-        # or as top-level field on event. Capture from both; dedup by name below.
+        # Tool defs may appear on any event; dedup by name.
         for td in (event.get("tools") or []) + (msg.get("tools") or []):
             name = td.get("name")
             if name and name not in tool_defs:
@@ -62,6 +67,15 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
                     schema_json=td,
                     tokens=count_tokens_of(td),
                 )
+
+        events.append((line_no, ev_type, event))
+
+    # Second pass: build turns, grouping consecutive assistant events with the
+    # same `message.id` into a single Turn.
+    i = 0
+    while i < len(events):
+        _, ev_type, event = events[i]
+        msg = event["message"]
 
         if ev_type == "user":
             user_blocks, tool_result_blocks = _split_user_blocks(msg.get("content", ""))
@@ -77,14 +91,34 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
                     blocks=tuple(tool_result_blocks), usage=None,
                 ))
                 next_index += 1
-        else:  # assistant
-            blocks = _parse_assistant_content(msg.get("content", []))
-            usage = _parse_usage(msg.get("usage"))
+            i += 1
+        else:  # assistant — peek-ahead for same message.id grouping
+            message_id = msg.get("id")
+            grouped_content = list(msg.get("content", []) or [])
+            grouped_usage = msg.get("usage")
+            j = i + 1
+            while j < len(events) and message_id:
+                _, nxt_type, nxt_event = events[j]
+                if nxt_type != "assistant":
+                    break
+                nxt_msg = nxt_event["message"]
+                if nxt_msg.get("id") != message_id:
+                    break
+                grouped_content.extend(nxt_msg.get("content", []) or [])
+                # All split events report the same usage; keep the one with
+                # max output_tokens defensively in case logs ever diverge.
+                nxt_usage = nxt_msg.get("usage")
+                if _usage_output(nxt_usage) > _usage_output(grouped_usage):
+                    grouped_usage = nxt_usage
+                j += 1
+            blocks = _parse_assistant_content(grouped_content)
+            usage = _parse_usage(grouped_usage)
             turns.append(Turn(
                 index=next_index, role="assistant",
                 blocks=tuple(blocks), usage=usage,
             ))
             next_index += 1
+            i = j
 
     return ParsedTrace(
         session_id=session_id,
@@ -92,6 +126,10 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
         tool_defs=dict(tool_defs),
         pricing=pricing,
     )
+
+
+def _usage_output(u) -> int:
+    return int(u.get("output_tokens", 0) or 0) if isinstance(u, dict) else 0
 
 
 def _iter_lines(path: Path) -> Iterator[tuple[str, int]]:
