@@ -11,6 +11,7 @@ from tlp.analyzers import registry
 from tlp.config import load_defaults, load_pricing
 from tlp.reporter import render_table, render_json
 from tlp.schema.dump import dump as schema_dump_run, render_text as schema_render_text, render_json as schema_render_json
+from tlp.aggregate import aggregate as aggregate_run, render_table as agg_render_table, render_json as agg_render_json
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 
@@ -129,6 +130,60 @@ def schema_dump(
         sys.stdout.write(schema_render_json(report) + "\n")
     else:
         sys.stdout.write(schema_render_text(report) + "\n")
+
+
+@app.command(name="aggregate")
+def aggregate(
+    paths: list[Path] = typer.Argument(..., help="One or more .jsonl files or directories"),
+    format: str = typer.Option("table", "--format", help="table | json"),
+    output: Optional[Path] = typer.Option(None, "--output", help="write JSON to file"),
+    config_path: Optional[Path] = typer.Option(None, "--config", help="defaults.yaml override"),
+    pricing_path: Optional[Path] = typer.Option(None, "--pricing", help="pricing.yaml override"),
+    outlier_multiplier: Optional[float] = typer.Option(
+        None, "--outlier-multiplier",
+        help="override aggregate.outlier_multiplier (default 2.0)",
+    ),
+    min_confidence: str = typer.Option("low", "--min-confidence", help="low | mid | high"),
+) -> None:
+    """Aggregate multiple session transcripts with median-based outlier flagging."""
+    if format not in ("table", "json"):
+        typer.echo("error: --format must be 'table' or 'json'", err=True)
+        raise typer.Exit(code=1)
+    for p in paths:
+        if not p.exists():
+            typer.echo(f"error: file not found: {p}", err=True)
+            raise typer.Exit(code=1)
+
+    try:
+        report = aggregate_run(
+            paths,
+            config_path=config_path,
+            pricing_path=pricing_path,
+            outlier_multiplier=outlier_multiplier,
+            min_confidence=min_confidence,
+        )
+    except FileNotFoundError as e:
+        typer.echo(f"error: file not found: {e}", err=True)
+        raise typer.Exit(code=1)
+    except Exception as e:
+        typer.echo(f"internal error: {e}", err=True)
+        raise typer.Exit(code=2)
+
+    if report.session_count == 0:
+        typer.echo("no sessions matched")
+        return
+
+    if format == "json":
+        out = agg_render_json(report)
+        if output:
+            output.write_text(out)
+        else:
+            sys.stdout.write(out + "\n")
+    else:
+        agg_render_table(
+            report,
+            console=Console(force_terminal=False if not sys.stdout.isatty() else None),
+        )
 
 
 if __name__ == "__main__":

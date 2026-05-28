@@ -108,3 +108,43 @@ def test_no_args_shows_help():
     # typer no-args returns 0 and prints help including both subcommands
     assert "analyze" in r.stdout or "analyze" in r.stderr
     assert "schema-dump" in r.stdout or "schema-dump" in r.stderr
+
+
+def test_aggregate_directory_table():
+    fix_dir = "tests/fixtures/synthetic/aggregate"
+    r = _run("aggregate", fix_dir)
+    assert r.returncode == 0, r.stderr
+    assert "Aggregate" in r.stdout
+    assert "Total:" in r.stdout
+
+
+def test_aggregate_json_output():
+    fix_dir = "tests/fixtures/synthetic/aggregate"
+    r = _run("aggregate", fix_dir, "--format", "json")
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    assert data["session_count"] == 2
+    assert "outlier_threshold" in data
+
+
+def test_aggregate_two_files_explicit():
+    r = _run(
+        "aggregate",
+        "tests/fixtures/synthetic/aggregate/session_normal.jsonl",
+        "tests/fixtures/synthetic/aggregate/session_outlier.jsonl",
+        "--format", "json",
+    )
+    assert r.returncode == 0
+    data = json.loads(r.stdout)
+    assert data["session_count"] == 2
+
+
+def test_aggregate_missing_path_exit_1():
+    r = _run("aggregate", "/nonexistent/dir/")
+    assert r.returncode == 1
+
+
+def test_aggregate_empty_dir_exit_0_no_sessions(tmp_path):
+    r = _run("aggregate", str(tmp_path))
+    assert r.returncode == 0
+    assert "no sessions matched" in r.stdout.lower() or "no sessions matched" in r.stderr.lower()
