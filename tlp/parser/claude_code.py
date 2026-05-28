@@ -46,6 +46,8 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
         msg = event.get("message")
         if ev_type not in ("user", "assistant") or not isinstance(msg, dict):
             warning_msg = f"line {line_no}: skipping type={ev_type!r}"
+            if strict:
+                raise ValueError(warning_msg)
             warnings.append(warning_msg)
             logging.warning(warning_msg)
             continue

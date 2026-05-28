@@ -1,5 +1,4 @@
 from __future__ import annotations
-import json
 import sys
 from pathlib import Path
 from typing import Optional
@@ -37,7 +36,7 @@ def analyze(
         typer.echo(f"error: file not found: {path}", err=True)
         raise typer.Exit(code=1)
     if format not in ("table", "json"):
-        typer.echo(f"error: --format must be 'table' or 'json'", err=True)
+        typer.echo("error: --format must be 'table' or 'json'", err=True)
         raise typer.Exit(code=1)
 
     try:
@@ -69,13 +68,15 @@ def analyze(
         try:
             r = cls().analyze(trace, config)
         except Exception as e:
-            from tlp.types import LeakReport, LeverCategory
+            from tlp.types import LeakReport
             r = LeakReport(
                 analyzer=cls.name, lever=cls.lever,
                 leaked_tokens=0, leaked_cost_usd=0.0, findings=[],
                 error=str(e),
             )
         r.findings = [f for f in r.findings if conf_rank.get(f.confidence, 1) >= min_rank]
+        # Recompute leaked_tokens after filter so summary table matches displayed findings
+        r.leaked_tokens = sum(f.leaked_tokens for f in r.findings)
         reports.append(r)
 
     drift_pct = None

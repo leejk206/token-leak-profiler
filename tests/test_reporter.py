@@ -1,6 +1,11 @@
 import json
 import pytest
+from io import StringIO
+
+from rich.console import Console
+
 from tlp.reporter.json_renderer import render_json
+from tlp.reporter.table import render_table
 from tlp.types import (
     ParsedTrace, Turn, Block, Usage, PricingTable,
     LeakReport, LeverCategory, Finding,
@@ -50,11 +55,6 @@ def test_json_handles_analyzer_error():
     out = render_json(_trace(), reports, bucket_map={"reasoning_overrun": "output"})
     data = json.loads(out)
     assert data["reports"][0]["error"] == "boom"
-
-
-from rich.console import Console
-from io import StringIO
-from tlp.reporter.table import render_table
 
 
 def test_table_includes_lever_rows_and_totals():

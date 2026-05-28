@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from tlp.tokenizer.local import count_tokens
 
 
@@ -25,9 +27,6 @@ def test_none_and_dict_safe():
     from tlp.tokenizer.local import count_tokens_of
     assert count_tokens_of(None) == 0
     assert count_tokens_of({"a": 1}) > 0  # JSON-serialized
-
-
-from unittest.mock import MagicMock, patch
 
 
 def test_verify_disabled_returns_none_drift():

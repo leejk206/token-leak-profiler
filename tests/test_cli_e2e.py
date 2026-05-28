@@ -58,3 +58,23 @@ def test_e2e_golden_bloat(tmp_path: Path):
     assert bloat["leaked_tokens"] > 0
     assert all("leaked_cost_usd" in r for r in data["reports"])
     assert all("usage_bucket" in r for r in data["reports"])
+
+
+def test_strict_aborts_on_unknown_event(tmp_path: Path):
+    bad = tmp_path / "bad.jsonl"
+    bad.write_text('{"type":"unknown-kind","message":{}}\n')
+    r = _run("analyze", str(bad), "--strict")
+    assert r.returncode != 0
+
+
+def test_min_confidence_high_filters_and_zeros_tokens(tmp_path: Path):
+    out = tmp_path / "out.json"
+    r = _run("analyze", str(FIX), "--format", "json",
+             "--output", str(out), "--min-confidence", "high")
+    assert r.returncode == 0
+    data = json.loads(out.read_text())
+    for report in data["reports"]:
+        # With high-only filter, mid-confidence findings drop and the token total
+        # must match the sum of remaining findings (no orphan tokens).
+        finding_sum = sum(f["leaked_tokens"] for f in report["findings"])
+        assert report["leaked_tokens"] == finding_sum
