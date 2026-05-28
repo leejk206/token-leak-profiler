@@ -143,7 +143,6 @@ class CacheTurnoverCostAnalyzer(BaseAnalyzer):
             total_a = sum(drop for _, drop, _ in architectural_events)
             count_a = len(architectural_events)
             mean_a = total_a // count_a
-            confidence_a = _confidence(count_a, total_a)
             evidence_a: dict = {
                 "turnover_kind": "architectural",
                 "invalidation_turn_count": count_a,
@@ -154,11 +153,10 @@ class CacheTurnoverCostAnalyzer(BaseAnalyzer):
             if stable_prefix_est is not None:
                 evidence_a["stable_prefix_tokens_estimate"] = stable_prefix_est
             suggestion_a = (
-                f"{count_a} cache turnover event(s) are Claude Code default "
-                f"conversation-extension behavior, not directly user-fixable. "
-                f"Avg {mean_a} tokens re-cached per event. "
-                f"Each new user turn re-caches all conversation history as part of "
-                f"normal operation."
+                f"{count_a} cache turnover event(s) are Claude Code default behavior "
+                f"(new user turn → re-cache history). Not directly user-fixable — "
+                f"signal-only measurement, included for awareness. "
+                f"Avg {mean_a} tokens re-cached per event."
             )
             if stable_prefix_est is not None:
                 suggestion_a += (
@@ -169,10 +167,10 @@ class CacheTurnoverCostAnalyzer(BaseAnalyzer):
             findings.append(Finding(
                 location="session",
                 leaked_tokens=total_a,
-                confidence=confidence_a,
+                confidence="low",
                 suggestion=suggestion_a,
                 evidence=evidence_a,
-                evidence_kind="confirmed",
+                evidence_kind="signal",
             ))
 
         total_all = sum(f.leaked_tokens for f in findings)

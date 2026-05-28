@@ -34,7 +34,9 @@ def test_real_invalidation_pattern_flagged():
     # a2 drop = 10000, a4 drop = 17000 → total 27000
     assert f.evidence["total_dropped_tokens"] == 27000
     assert f.evidence["mean_drop_per_invalidation"] == 13500
-    assert f.evidence_kind == "confirmed"
+    # v0.4: architectural (no timestamps) → signal-only, low confidence
+    assert f.evidence_kind == "signal"
+    assert f.confidence == "low"
 
 
 def test_single_assistant_turn_returns_empty():
@@ -144,12 +146,14 @@ def test_confidence_scales_with_severity():
     assert len(r.findings) == 1
     assert r.findings[0].confidence == "low"
 
-    # 3 invalidations, total 18000 < 50k → mid
+    # 3 invalidations, total 18000 < 50k — architectural (no timestamps) → signal-only, low
     r = CacheMissPenaltyAnalyzer().analyze(make_mid_invalidation_trace(), load_defaults())
-    assert r.findings[0].confidence == "mid"
+    assert r.findings[0].confidence == "low"
+    assert r.findings[0].evidence_kind == "signal"
     assert r.findings[0].evidence["invalidation_turn_count"] == 3
     assert r.findings[0].evidence["total_dropped_tokens"] == 18000
 
-    # 5 invalidations → high
+    # 5 invalidations — architectural (no timestamps) → signal-only, low
     r = CacheMissPenaltyAnalyzer().analyze(make_high_invalidation_trace(), load_defaults())
-    assert r.findings[0].confidence == "high"
+    assert r.findings[0].confidence == "low"
+    assert r.findings[0].evidence_kind == "signal"

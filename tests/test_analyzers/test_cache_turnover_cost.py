@@ -41,7 +41,8 @@ def test_real_invalidation_no_timestamps_classified_architectural():
     # a2 drop = 10000, a4 drop = 17000 → total 27000
     assert f.evidence["total_dropped_tokens"] == 27000
     assert f.evidence["mean_drop_per_invalidation"] == 13500
-    assert f.evidence_kind == "confirmed"
+    assert f.evidence_kind == "signal"
+    assert f.confidence == "low"
 
 
 def test_single_assistant_turn_returns_empty():
@@ -157,17 +158,19 @@ def test_confidence_scales_with_severity():
     assert r.findings[0].confidence == "low"
     assert r.findings[0].evidence["turnover_kind"] == "architectural"
 
-    # 3 invalidations, total 18000 < 50k → mid
+    # 3 invalidations, total 18000 < 50k — architectural (no timestamps) → signal-only, low
     r = CacheTurnoverCostAnalyzer().analyze(make_mid_invalidation_trace(), load_defaults())
     assert len(r.findings) == 1
-    assert r.findings[0].confidence == "mid"
+    assert r.findings[0].confidence == "low"
+    assert r.findings[0].evidence_kind == "signal"
     assert r.findings[0].evidence["invalidation_turn_count"] == 3
     assert r.findings[0].evidence["total_dropped_tokens"] == 18000
 
-    # 5 invalidations → high
+    # 5 invalidations — architectural (no timestamps) → signal-only, low
     r = CacheTurnoverCostAnalyzer().analyze(make_high_invalidation_trace(), load_defaults())
     assert len(r.findings) == 1
-    assert r.findings[0].confidence == "high"
+    assert r.findings[0].confidence == "low"
+    assert r.findings[0].evidence_kind == "signal"
 
 
 def test_recoverable_vs_architectural_split_by_timestamp():
@@ -194,6 +197,10 @@ def test_recoverable_vs_architectural_split_by_timestamp():
     assert arch.evidence["total_dropped_tokens"] == 18000
     assert rec.evidence["total_dropped_tokens"] == 7000
     assert r.leaked_tokens == 25000
+    # v0.4: architectural → signal-only (low), recoverable stays confirmed
+    assert arch.evidence_kind == "signal"
+    assert arch.confidence == "low"
+    assert rec.evidence_kind == "confirmed"
 
 
 def test_stable_prefix_estimate_surfaced_when_clustered():
@@ -253,4 +260,6 @@ def test_no_timestamps_defaults_to_architectural():
     r = CacheTurnoverCostAnalyzer().analyze(trace, load_defaults())
     assert len(r.findings) == 1
     assert r.findings[0].evidence["turnover_kind"] == "architectural"
-    assert "not directly user-fixable" in r.findings[0].suggestion
+    assert "Not directly user-fixable" in r.findings[0].suggestion
+    assert r.findings[0].evidence_kind == "signal"
+    assert r.findings[0].confidence == "low"
