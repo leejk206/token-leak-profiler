@@ -14,6 +14,9 @@ def test_initial_block_flagged_stale():
     # turn 0 (initial user) should be flagged stale by end of trace
     assert any("turn[0]" in loc for loc in locations)
     assert report.leaked_tokens > 0
+    # v0.4.0: stale_context is signal-only (no verified prescription)
+    assert all(f.evidence_kind == "signal" for f in report.findings)
+    assert all(f.confidence == "low" for f in report.findings)
 
 
 def test_no_stale_in_short_trace():

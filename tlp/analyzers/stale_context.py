@@ -49,13 +49,14 @@ class StaleContextAnalyzer(BaseAnalyzer):
                     findings.append(Finding(
                         location=f"turn[{i}].blocks[{bi}]",
                         leaked_tokens=block.tokens,
-                        confidence="mid",
+                        confidence="low",
                         suggestion=(
                             f"turn[{i}] block last referenced at turn[{last_ref}] "
-                            f"({trailing} turns ago) — compress or drop"
+                            f"({trailing} turns ago) — candidate for review; "
+                            f"inspect if still needed before compressing (may be cognitive context, not waste)"
                         ),
                         evidence={"last_ref_turn": last_ref, "trailing_turns": trailing},
-                        evidence_kind="confirmed",
+                        evidence_kind="signal",
                     ))
 
         return LeakReport(
