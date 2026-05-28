@@ -79,3 +79,54 @@ def test_aggregate_single_session_no_outlier():
     rep = aggregate([Path("tests/fixtures/synthetic/aggregate/session_normal.jsonl")])
     assert rep.session_count == 1
     assert rep.sessions[0].is_outlier is False
+
+
+import json as json_module
+from io import StringIO
+from rich.console import Console
+
+
+def test_render_table_shows_session_rows_and_summary():
+    from tlp.aggregate.run import aggregate
+    from tlp.aggregate.reporter import render_table
+    fix_dir = Path("tests/fixtures/synthetic/aggregate")
+    rep = aggregate([fix_dir])
+    buf = StringIO()
+    console = Console(file=buf, width=140, force_terminal=False, color_system=None)
+    render_table(rep, console=console)
+    output = buf.getvalue()
+    assert "Aggregate" in output
+    assert "Total:" in output
+    assert "Median session leak" in output
+    # At least one session label
+    assert "agg-normal" in output or "<unknown>" in output
+
+
+def test_render_table_marks_outlier_visibly():
+    from tlp.aggregate.run import aggregate
+    from tlp.aggregate.reporter import render_table
+    fix_dir = Path("tests/fixtures/synthetic/aggregate")
+    rep = aggregate([fix_dir])
+    buf = StringIO()
+    console = Console(file=buf, width=140, force_terminal=False, color_system=None)
+    render_table(rep, console=console)
+    output = buf.getvalue()
+    assert "OUTLIER" in output
+
+
+def test_render_json_returns_valid_payload():
+    from tlp.aggregate.run import aggregate
+    from tlp.aggregate.reporter import render_json
+    fix_dir = Path("tests/fixtures/synthetic/aggregate")
+    rep = aggregate([fix_dir])
+    out = render_json(rep)
+    data = json_module.loads(out)
+    assert data["session_count"] == 2
+    assert "sessions" in data
+    assert "total_cost_usd" in data
+    assert "median_leak_ratio" in data
+    assert "outlier_threshold" in data
+    # Each session has expected keys
+    assert "leak_ratio" in data["sessions"][0]
+    assert "is_outlier" in data["sessions"][0]
+    assert "dominant_lever" in data["sessions"][0]

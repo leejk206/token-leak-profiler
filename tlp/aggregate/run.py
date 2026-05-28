@@ -49,7 +49,7 @@ def aggregate(
         dominant = max(positive, key=lambda r: r.leaked_tokens).analyzer if positive else None
         rows_unflagged.append(SessionRow(
             session_id=trace.session_id,
-            label=trace.label or (trace.session_id[:8] if trace.session_id else "<unknown>"),
+            label=trace.label or (trace.session_id if trace.session_id else "<unknown>"),
             path=f,
             turn_count=len(trace.turns),
             total_cost_usd=total_cost,
