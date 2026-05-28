@@ -6,9 +6,9 @@ from tlp.types import PricingTable
 def test_load_defaults_returns_dict_with_all_levers():
     d = load_defaults()
     assert set(d.keys()) >= {
-        "stale_context", "redundant_restatement", "tool_schema_bloat",
+        "stale_context", "redundant_restatement",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
-        "report",
+        "cache_turnover_cost", "report",
     }
     assert d["stale_context"]["stale_after_turns"] == 5
 

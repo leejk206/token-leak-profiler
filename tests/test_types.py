@@ -47,7 +47,7 @@ def test_turn_minimal_construction():
 def test_lever_category_values():
     assert LeverCategory.STALE_CONTEXT.value == "stale_context"
     assert {c.value for c in LeverCategory} == {
-        "stale_context", "redundant_restatement", "tool_schema_bloat",
+        "stale_context", "redundant_restatement",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
         "cache_turnover_cost",
     }

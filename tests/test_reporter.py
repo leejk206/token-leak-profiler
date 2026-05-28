@@ -99,22 +99,22 @@ def test_table_includes_lever_rows_and_totals():
             findings=[Finding("turn[0]", 20, "mid", "compress this please", {})],
         ),
         LeakReport(
-            analyzer="tool_schema_bloat", lever=LeverCategory.TOOL_SCHEMA_BLOAT,
+            analyzer="verbose_tool_results", lever=LeverCategory.VERBOSE_TOOL_RESULTS,
             leaked_tokens=80, leaked_cost_usd=0.0,
-            findings=[Finding("tool_def[unused]", 80, "high", "drop tool", {})],
+            findings=[Finding("turn[1]", 80, "high", "shorten result", {})],
         ),
     ]
     render_table(
         trace, reports,
-        bucket_map={"stale_context": "input", "tool_schema_bloat": "input"},
+        bucket_map={"stale_context": "input", "verbose_tool_results": "output"},
         console=console,
     )
     output = buf.getvalue()
     assert "sess-x" in output
     assert "stale_context" in output
-    assert "tool_schema_bloat" in output
+    assert "verbose_tool_results" in output
     assert "compress this please" in output
-    assert "drop tool" in output
+    assert "shorten result" in output
 
 
 def test_json_includes_confirmed_and_signal_totals():

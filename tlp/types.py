@@ -7,7 +7,6 @@ from typing import Literal
 class LeverCategory(Enum):
     STALE_CONTEXT = "stale_context"
     REDUNDANT_RESTATEMENT = "redundant_restatement"
-    TOOL_SCHEMA_BLOAT = "tool_schema_bloat"
     VERBOSE_TOOL_RESULTS = "verbose_tool_results"
     REASONING_OVERRUN = "reasoning_overrun"
     FORMAT_BOILERPLATE = "format_boilerplate"

@@ -18,13 +18,13 @@ def test_analyze_json_output():
     assert r.returncode == 0, r.stderr
     data = json.loads(r.stdout)
     assert data["session_id"] == "s-bloat"
-    assert len(data["reports"]) == 7
+    assert len(data["reports"]) == 6
 
 
 def test_analyze_table_default():
     r = _run("analyze", str(FIX))
     assert r.returncode == 0
-    assert "tool_schema_bloat" in r.stdout
+    assert "stale_context" in r.stdout
     assert "Token Leak Profile" in r.stdout
 
 
@@ -34,10 +34,10 @@ def test_missing_file_exit_1():
 
 
 def test_filter_analyzers():
-    r = _run("analyze", str(FIX), "--format", "json", "--analyzers", "tool_schema_bloat")
+    r = _run("analyze", str(FIX), "--format", "json", "--analyzers", "stale_context")
     data = json.loads(r.stdout)
     assert len(data["reports"]) == 1
-    assert data["reports"][0]["analyzer"] == "tool_schema_bloat"
+    assert data["reports"][0]["analyzer"] == "stale_context"
 
 
 def test_e2e_golden_bloat(tmp_path: Path):
@@ -51,12 +51,12 @@ def test_e2e_golden_bloat(tmp_path: Path):
     assert data["turn_count"] == 4
     analyzer_names = {r["analyzer"] for r in data["reports"]}
     assert analyzer_names == {
-        "stale_context", "redundant_restatement", "tool_schema_bloat",
+        "stale_context", "redundant_restatement",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
         "cache_turnover_cost",
     }
-    bloat = next(r for r in data["reports"] if r["analyzer"] == "tool_schema_bloat")
-    assert bloat["leaked_tokens"] > 0
+    stale = next(r for r in data["reports"] if r["analyzer"] == "stale_context")
+    assert isinstance(stale["leaked_tokens"], int)
     assert all("leaked_cost_usd" in r for r in data["reports"])
     assert all("usage_bucket" in r for r in data["reports"])
 

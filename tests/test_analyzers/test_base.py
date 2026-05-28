@@ -34,8 +34,8 @@ def test_subclass_auto_registers():
 def test_analyze_returns_leak_report(empty_trace):
     class _DummyB(BaseAnalyzer):
         name = "_dummy_b"
-        lever = LeverCategory.TOOL_SCHEMA_BLOAT
-        usage_bucket = "input"
+        lever = LeverCategory.VERBOSE_TOOL_RESULTS
+        usage_bucket = "output"
         def analyze(self, trace, config):
             return LeakReport(
                 analyzer=self.name, lever=self.lever,

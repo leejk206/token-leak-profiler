@@ -3,7 +3,6 @@ from tlp.analyzers.base import BaseAnalyzer, registry
 from tlp.analyzers import (  # noqa: F401  (imports trigger registration)
     stale_context,
     redundant_restatement,
-    tool_schema_bloat,
     verbose_tool_results,
     reasoning_overrun,
     format_boilerplate,
