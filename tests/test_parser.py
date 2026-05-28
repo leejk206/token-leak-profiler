@@ -141,7 +141,8 @@ def test_parse_ai_title_works_on_top_level_field_format():
 
 def test_parse_detects_subagent_via_isSidechain():
     """Subagent transcripts have isSidechain=True. ParsedTrace.is_subagent must reflect."""
-    import tempfile, json as json_module
+    import tempfile
+    import json as json_module
     fixture = (
         json_module.dumps({"parentUuid": None, "isSidechain": True, "agentId": "agent-xyz", "type": "user",
                            "message": {"role": "user", "content": "do task X"}}) + "\n"

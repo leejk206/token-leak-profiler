@@ -19,7 +19,8 @@ def test_flags_repeated_identical_tool_call():
 
 
 def test_no_finding_when_unique_calls():
-    import tempfile, json as json_module
+    import tempfile
+    import json as json_module
     events = [
         {"type":"assistant","message":{"role":"assistant","id":"m1","content":[{"type":"tool_use","id":"t1","name":"Read","input":{"path":"a.txt"}}],"usage":{"input_tokens":1,"output_tokens":1,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}},
         {"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"A"}]}},

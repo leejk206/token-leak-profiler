@@ -25,7 +25,8 @@ def test_no_finding_on_non_subagent_trace():
 
 
 def test_no_finding_below_threshold():
-    import tempfile, json as json_module
+    import tempfile
+    import json as json_module
     fixture = (
         json_module.dumps({"isSidechain": True, "agentId": "agent-y", "type": "user",
                            "message": {"role": "user", "content": "small task"}}) + "\n"
