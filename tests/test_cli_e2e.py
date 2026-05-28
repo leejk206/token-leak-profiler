@@ -79,3 +79,32 @@ def test_min_confidence_high_filters_and_zeros_tokens(tmp_path: Path):
         # must match the sum of remaining findings (no orphan tokens).
         finding_sum = sum(f["leaked_tokens"] for f in report["findings"])
         assert report["leaked_tokens"] == finding_sum
+
+
+def test_schema_dump_text_output():
+    r = _run("schema-dump", str(FIX))
+    assert r.returncode == 0, r.stderr
+    assert "Session" in r.stdout
+    assert "event types:" in r.stdout
+    assert "usage totals:" in r.stdout
+
+
+def test_schema_dump_json_output():
+    r = _run("schema-dump", str(FIX), "--format", "json")
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    assert "session_id" in data
+    assert "event_types" in data
+    assert "assistant_block_types" in data
+
+
+def test_schema_dump_missing_file_exit_1():
+    r = _run("schema-dump", "/nonexistent/path.jsonl")
+    assert r.returncode == 1
+
+
+def test_no_args_shows_help():
+    r = _run()
+    # typer no-args returns 0 and prints help including both subcommands
+    assert "analyze" in r.stdout or "analyze" in r.stderr
+    assert "schema-dump" in r.stdout or "schema-dump" in r.stderr

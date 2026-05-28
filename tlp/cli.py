@@ -10,14 +10,9 @@ from tlp.parser import parse
 from tlp.analyzers import registry
 from tlp.config import load_defaults, load_pricing
 from tlp.reporter import render_table, render_json
+from tlp.schema.dump import dump as schema_dump_run, render_text as schema_render_text, render_json as schema_render_json
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
-
-
-@app.command(hidden=True)
-def _noop() -> None:
-    """Hidden command that forces typer into multi-command mode."""
-    pass  # pragma: no cover
 
 
 @app.command()
@@ -32,6 +27,7 @@ def analyze(
     min_confidence: str = typer.Option("mid", "--min-confidence", help="low | mid | high"),
     strict: bool = typer.Option(False, "--strict", help="abort on parse errors"),
 ) -> None:
+    """Analyze a Claude Code transcript for token leaks across 7 levers."""
     if not path.exists():
         typer.echo(f"error: file not found: {path}", err=True)
         raise typer.Exit(code=1)
@@ -46,7 +42,7 @@ def analyze(
     except (FileNotFoundError, ValueError) as e:
         typer.echo(f"error: {e}", err=True)
         raise typer.Exit(code=1)
-    except Exception as e:  # internal
+    except Exception as e:
         typer.echo(f"internal error: {e}", err=True)
         raise typer.Exit(code=2)
 
@@ -75,7 +71,7 @@ def analyze(
                 error=str(e),
             )
         r.findings = [f for f in r.findings if conf_rank.get(f.confidence, 1) >= min_rank]
-        # Recompute leaked_tokens after filter so summary table matches displayed findings
+        # Recompute leaked_tokens after filter so summary matches displayed findings
         r.leaked_tokens = sum(f.leaked_tokens for f in r.findings)
         reports.append(r)
 
@@ -86,7 +82,7 @@ def analyze(
             {"role": "user", "content": (b.text or "")}
             for t in trace.turns for b in t.blocks
             if t.role == "user" and b.kind == "text"
-        ][:20]  # cap to avoid runaway
+        ][:20]
         local_total = sum(t.usage.input_tokens for t in trace.turns if t.usage)
         drift_pct = compute_drift_pct(local_total, sample)
 
@@ -108,6 +104,31 @@ def analyze(
             tokenizer_mode="local", verify_drift_pct=drift_pct,
             console=Console(force_terminal=False if not sys.stdout.isatty() else None),
         )
+
+
+@app.command(name="schema-dump")
+def schema_dump(
+    path: Path = typer.Argument(..., help="Claude Code transcript .jsonl"),
+    format: str = typer.Option("text", "--format", help="text | json"),
+) -> None:
+    """Dump structural schema of a transcript (event types, block types, etc.)."""
+    if not path.exists():
+        typer.echo(f"error: file not found: {path}", err=True)
+        raise typer.Exit(code=1)
+    if format not in ("text", "json"):
+        typer.echo("error: --format must be 'text' or 'json'", err=True)
+        raise typer.Exit(code=1)
+
+    try:
+        report = schema_dump_run(path)
+    except Exception as e:
+        typer.echo(f"internal error: {e}", err=True)
+        raise typer.Exit(code=2)
+
+    if format == "json":
+        sys.stdout.write(schema_render_json(report) + "\n")
+    else:
+        sys.stdout.write(schema_render_text(report) + "\n")
 
 
 if __name__ == "__main__":
