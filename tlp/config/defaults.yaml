@@ -21,6 +21,7 @@ cache_miss_penalty:
   min_avg_creation_tokens: 1000
 aggregate:
   outlier_multiplier: 2.0
+  outlier_absolute_floor: 0.1
 report:
   findings_per_lever: 5
   min_confidence: mid

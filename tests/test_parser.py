@@ -121,3 +121,19 @@ def test_parse_absorbs_tools_changed_as_assistant():
     # Total output: 5 + 100 + 7 = 112 (was 12 in v0.2 because tools_changed was skipped)
     total_output = sum(tr.usage.output_tokens for tr in assistant_turns if tr.usage)
     assert total_output == 112
+
+
+def test_parse_ai_title_works_on_top_level_field_format():
+    """Real Claude Code format: ai-title as top-level field, no 'message' wrapper."""
+    import tempfile
+    import json
+    with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as f:
+        f.write(json.dumps({"type":"ai-title","aiTitle":"Real Format Title","sessionId":"rt-1"}) + "\n")
+        f.write(json.dumps({"type":"user","sessionId":"rt-1","uuid":"u1","message":{"role":"user","content":"hi"}}) + "\n")
+        f.write(json.dumps({"type":"assistant","sessionId":"rt-1","uuid":"a1","message":{"role":"assistant","id":"m1","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":1,"output_tokens":1,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}) + "\n")
+        path = Path(f.name)
+    try:
+        t = parse(path)
+        assert t.label == "Real Format Title"
+    finally:
+        path.unlink()

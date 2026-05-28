@@ -1,5 +1,10 @@
+import json as json_module
 import tempfile
+from io import StringIO
 from pathlib import Path
+
+from rich.console import Console
+
 from tlp.aggregate.types import SessionRow, AggregateReport
 
 
@@ -81,11 +86,6 @@ def test_aggregate_single_session_no_outlier():
     assert rep.sessions[0].is_outlier is False
 
 
-import json as json_module
-from io import StringIO
-from rich.console import Console
-
-
 def test_render_table_shows_session_rows_and_summary():
     from tlp.aggregate.run import aggregate
     from tlp.aggregate.reporter import render_table
@@ -130,3 +130,43 @@ def test_render_json_returns_valid_payload():
     assert "leak_ratio" in data["sessions"][0]
     assert "is_outlier" in data["sessions"][0]
     assert "dominant_lever" in data["sessions"][0]
+
+
+def test_expand_paths_excludes_subagent_dirs(tmp_path):
+    from tlp.aggregate.run import expand_paths
+    # Parent session
+    parent = tmp_path / "parent.jsonl"
+    parent.write_text("{}\n")
+    # Subagent sidechain
+    sub_dir = tmp_path / "abc" / "subagents"
+    sub_dir.mkdir(parents=True)
+    sub = sub_dir / "agent-1.jsonl"
+    sub.write_text("{}\n")
+    result = expand_paths([tmp_path])
+    assert parent in result
+    assert sub not in result
+
+
+def test_aggregate_zero_median_still_flags_high_ratio_via_floor(tmp_path):
+    """When most sessions have leak_ratio=0, an above-floor session still flags."""
+    from tlp.aggregate.run import aggregate
+    # 3 zero-ratio sessions
+    for i in range(3):
+        p = tmp_path / f"zero_{i}.jsonl"
+        p.write_text(
+            '{"type":"user","sessionId":"z' + str(i) + '","uuid":"u","message":{"role":"user","content":"hi"}}\n'
+            '{"type":"assistant","sessionId":"z' + str(i) + '","uuid":"a","message":{"role":"assistant","id":"mz' + str(i) + '","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":100,"output_tokens":1,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}\n'
+        )
+    # 1 outlier with high leak ratio (reuse existing fixture by copy)
+    import shutil
+    shutil.copy(
+        "tests/fixtures/synthetic/aggregate/session_outlier.jsonl",
+        tmp_path / "outlier.jsonl",
+    )
+    rep = aggregate([tmp_path])
+    assert rep.session_count == 4
+    outliers = [s for s in rep.sessions if s.is_outlier]
+    assert len(outliers) >= 1, (
+        f"Expected at least one outlier via absolute floor; got median={rep.median_leak_ratio}, "
+        f"threshold={rep.outlier_threshold}, sessions={[(s.label, s.leak_ratio, s.is_outlier) for s in rep.sessions]}"
+    )

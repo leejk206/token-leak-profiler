@@ -58,9 +58,13 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
             ev_type = "assistant"
         msg = event.get("message")
 
-        # ai-title: extract first non-empty title text, then continue (skip)
+        # ai-title: real Claude Code format is a top-level aiTitle field; some
+        # synthetic fixtures may use a message.content variant.
         if ev_type == "ai-title" and ai_title is None:
-            if isinstance(msg, dict):
+            top_level = event.get("aiTitle")
+            if isinstance(top_level, str) and top_level.strip():
+                ai_title = top_level.strip()
+            elif isinstance(msg, dict):
                 content = msg.get("content")
                 if isinstance(content, str) and content.strip():
                     ai_title = content.strip()

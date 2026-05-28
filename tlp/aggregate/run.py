@@ -15,7 +15,12 @@ def expand_paths(paths: list[Path]) -> list[Path]:
         if not p.exists():
             raise FileNotFoundError(p)
         if p.is_dir():
-            out.extend(sorted(p.rglob("*.jsonl")))
+            for jsonl in sorted(p.rglob("*.jsonl")):
+                # Skip subagent sidechain transcripts; they share sessionId
+                # with their parent and contaminate cost totals.
+                if "subagents" in jsonl.parts:
+                    continue
+                out.append(jsonl)
         elif p.is_file() and p.suffix == ".jsonl":
             out.append(p)
     return out
@@ -36,6 +41,7 @@ def aggregate(
     multiplier = outlier_multiplier if outlier_multiplier is not None else float(
         config.get("aggregate", {}).get("outlier_multiplier", 2.0)
     )
+    absolute_floor = float(config.get("aggregate", {}).get("outlier_absolute_floor", 0.1))
 
     rows_unflagged: list[SessionRow] = []
     for f in files:
@@ -73,7 +79,13 @@ def aggregate(
             turn_count=row.turn_count, total_cost_usd=row.total_cost_usd,
             effective_leak_cost_usd=row.effective_leak_cost_usd,
             leak_ratio=row.leak_ratio, dominant_lever=row.dominant_lever,
-            is_outlier=(threshold > 0 and row.leak_ratio >= threshold and len(rows_unflagged) > 1),
+            is_outlier=(
+                len(rows_unflagged) > 1
+                and (
+                    (threshold > 0 and row.leak_ratio >= threshold)
+                    or row.leak_ratio >= absolute_floor
+                )
+            ),
         )
         for row in rows_unflagged
     )
