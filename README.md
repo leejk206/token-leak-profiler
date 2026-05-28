@@ -85,6 +85,19 @@ tools:
 
 Pass via CLI: `uv run tlp analyze --measurements tlp/config/measurements.yaml <session.jsonl>`
 
+## Calibrating MCP measurements
+
+If you have MCP tool definitions in Anthropic format (JSON list of `{name, description, input_schema}`), replace the 200 tok/tool heuristic with measured values:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+uv run tlp count-tokens --tools your_tools.json --merge
+```
+
+This calls Anthropic's `count_tokens` API to compute each tool's marginal token cost and writes to `tlp/config/measurements.yaml`. With `--merge`, existing entries are preserved.
+
+When all tools of an unused MCP server are measured, `mcp_server_overhead` Findings promote from `estimated` → `confirmed`.
+
 ## Tests
 
     uv run pytest
