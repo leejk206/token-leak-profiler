@@ -17,8 +17,7 @@ format_boilerplate:
   edge_window_tokens: 80
   min_repetition: 3
 cache_miss_penalty:
-  min_recreation_turns: 3
-  min_avg_creation_tokens: 1000
+  min_invalidation_drop: 5000
 aggregate:
   outlier_multiplier: 2.0
   outlier_absolute_floor: 0.1
