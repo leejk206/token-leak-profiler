@@ -1,0 +1,21 @@
+stale_context:
+  stale_after_turns: 5
+redundant_restatement:
+  jaccard_threshold: 0.8
+  ngram: 5
+  num_perm: 256
+tool_schema_bloat: {}
+verbose_tool_results:
+  citation_ratio_threshold: 0.10
+  followup_window_turns: 3
+  ngram: 3
+reasoning_overrun:
+  thinking_to_output_ratio: 5
+  sentence_ngram: 5
+  jaccard_threshold: 0.85
+format_boilerplate:
+  edge_window_tokens: 80
+  min_repetition: 3
+report:
+  findings_per_lever: 5
+  min_confidence: mid

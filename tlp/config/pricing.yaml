@@ -1,0 +1,7 @@
+models:
+  claude-sonnet-4-6:
+    input_per_mtok: 3.0
+    output_per_mtok: 15.0
+    cache_read_per_mtok: 0.3
+    cache_creation_per_mtok: 3.75
+default: claude-sonnet-4-6
