@@ -38,3 +38,23 @@ def test_filter_analyzers():
     data = json.loads(r.stdout)
     assert len(data["reports"]) == 1
     assert data["reports"][0]["analyzer"] == "tool_schema_bloat"
+
+
+def test_e2e_golden_bloat(tmp_path: Path):
+    out = tmp_path / "out.json"
+    r = _run("analyze", str(FIX), "--format", "json", "--output", str(out))
+    assert r.returncode == 0, r.stderr
+    data = json.loads(out.read_text())
+    # Stable shape assertions (avoid full snapshot since floats and tokenizer
+    # approximations may drift; lock structural invariants instead).
+    assert data["session_id"] == "s-bloat"
+    assert data["turn_count"] == 4
+    analyzer_names = {r["analyzer"] for r in data["reports"]}
+    assert analyzer_names == {
+        "stale_context", "redundant_restatement", "tool_schema_bloat",
+        "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
+    }
+    bloat = next(r for r in data["reports"] if r["analyzer"] == "tool_schema_bloat")
+    assert bloat["leaked_tokens"] > 0
+    assert all("leaked_cost_usd" in r for r in data["reports"])
+    assert all("usage_bucket" in r for r in data["reports"])
