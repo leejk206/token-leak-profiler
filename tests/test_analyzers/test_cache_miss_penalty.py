@@ -1,6 +1,12 @@
+"""Legacy test file kept for historical reference. See test_cache_turnover_cost.py for current tests.
+
+These tests are preserved but now exercise CacheTurnoverCostAnalyzer (renamed from
+CacheMissPenaltyAnalyzer in v0.3.3). All findings are now classified by recoverability;
+without timestamps the behavior defaults to architectural, matching these test assertions.
+"""
 from pathlib import Path
 from tlp.parser import parse
-from tlp.analyzers.cache_miss_penalty import CacheMissPenaltyAnalyzer
+from tlp.analyzers.cache_turnover_cost import CacheTurnoverCostAnalyzer as CacheMissPenaltyAnalyzer
 from tlp.config import load_defaults
 
 NORMAL_FIX = Path(__file__).parent.parent / "fixtures" / "synthetic" / "cache_miss_trace.jsonl"

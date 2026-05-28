@@ -43,7 +43,7 @@ See `docs/spec-checklist.md` for the full pre-spec workflow.
 | verbose_tool_results | input | tool output that's mostly never cited |
 | reasoning_overrun | output | thinking >> productive + duplicate sentences |
 | format_boilerplate | output | preambles/closers repeated across turns |
-| cache_miss_penalty | cache_creation | repeated cache invalidation pattern |
+| cache_turnover_cost | cache_creation | cache turnover cost (recoverable + architectural mix) |
 
 ## Tests
 

@@ -78,3 +78,17 @@ Every new lever must declare:
 `§15 Open Questions` is the appropriate place to defer decisions that need
 real-data calibration. Anything in §15 that touches the data model or
 analyzer math should be resolved before plan execution starts.
+
+## Rule: "X > 0 = leak" is not enough — verify user-recoverability
+
+(Added v0.3.3 after the 6th recurrence of this defect category.)
+
+For any new metric or lever, the spec must answer THREE questions, not two:
+
+1. **Is X = 0 the normal case?** (v1-v0.3.1 failures caught this stage)
+2. **If X > 0 in the wild, does it indicate something abnormal?** (v0.3.2 fixed this for cache_miss_penalty)
+3. **If X is abnormal AND > 0, can the user reduce it through their own actions?** (v0.3.2 missed this; council 2026-05-29 caught it for cache_turnover_cost)
+
+If the answer to (3) is "no" or "only partially", the metric must be framed neutrally (e.g. "cost" not "leak"), and the spec must categorize sub-cases by recoverability so the user can distinguish what's actionable from what's API mechanics.
+
+Reference: `docs/council/2026-05-29-cache-miss-penalty-deliberation.md`

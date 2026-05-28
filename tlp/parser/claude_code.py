@@ -117,6 +117,8 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
             message_id = msg.get("id")
             grouped_content = list(msg.get("content", []) or [])
             grouped_usage = msg.get("usage")
+            # Capture the timestamp from the first event in the group
+            grouped_timestamp: str | None = events[i][2].get("timestamp")
             j = i + 1
             while j < len(events) and message_id:
                 _, nxt_type, nxt_event = events[j]
@@ -144,6 +146,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
             turns.append(Turn(
                 index=next_index, role="assistant",
                 blocks=tuple(blocks), usage=usage,
+                timestamp=grouped_timestamp,
             ))
             next_index += 1
             i = j

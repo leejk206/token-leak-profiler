@@ -227,7 +227,7 @@ def test_table_findings_section_shows_kind_column():
 
 
 def test_table_pct_includes_cache_buckets_in_denominator():
-    """Regression: cache_miss_penalty leak should not produce >100% column."""
+    """Regression: cache_turnover_cost leak should not produce >100% column."""
     from tlp.types import (
         ParsedTrace, Turn, Block, Usage, PricingTable, LeakReport, LeverCategory, Finding,
     )
@@ -244,20 +244,20 @@ def test_table_pct_includes_cache_buckets_in_denominator():
     )
     reports = [
         LeakReport(
-            analyzer="cache_miss_penalty", lever=LeverCategory.CACHE_MISS_PENALTY,
+            analyzer="cache_turnover_cost", lever=LeverCategory.CACHE_TURNOVER_COST,
             leaked_tokens=40_000, leaked_cost_usd=0.0,
             findings=[Finding("session", 40_000, "mid", "x", {}, "confirmed")],
         ),
     ]
     render_table(
         trace, reports,
-        bucket_map={"cache_miss_penalty": "cache_creation"},
+        bucket_map={"cache_turnover_cost": "cache_creation"},
         console=console,
     )
     output = buf.getvalue()
     # 40000 / (100 + 50 + 200000 + 50000) = 16.0% — well under 100%
     import re
-    match = re.search(r"cache_miss_penalty[^\n]*?(\d+\.\d+)%", output)
+    match = re.search(r"cache_turnover_cost[^\n]*?(\d+\.\d+)%", output)
     assert match, f"Could not find % in output: {output}"
     pct = float(match.group(1))
     assert pct < 100.0, f"Percentage {pct}% exceeds 100% — denominator missing cache buckets"

@@ -11,7 +11,7 @@ class LeverCategory(Enum):
     VERBOSE_TOOL_RESULTS = "verbose_tool_results"
     REASONING_OVERRUN = "reasoning_overrun"
     FORMAT_BOILERPLATE = "format_boilerplate"
-    CACHE_MISS_PENALTY = "cache_miss_penalty"
+    CACHE_TURNOVER_COST = "cache_turnover_cost"
 
 
 BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]
@@ -45,6 +45,7 @@ class Turn:
     role: TurnRole
     blocks: tuple[Block, ...]
     usage: Usage | None
+    timestamp: str | None = None
 
 
 @dataclass(frozen=True)

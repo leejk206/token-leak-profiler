@@ -16,8 +16,9 @@ reasoning_overrun:
 format_boilerplate:
   edge_window_tokens: 80
   min_repetition: 3
-cache_miss_penalty:
+cache_turnover_cost:
   min_invalidation_drop: 5000
+  min_recoverable_gap_seconds: 300
 aggregate:
   outlier_multiplier: 2.0
   outlier_absolute_floor: 0.1

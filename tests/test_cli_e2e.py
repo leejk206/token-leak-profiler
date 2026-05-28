@@ -53,7 +53,7 @@ def test_e2e_golden_bloat(tmp_path: Path):
     assert analyzer_names == {
         "stale_context", "redundant_restatement", "tool_schema_bloat",
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
-        "cache_miss_penalty",
+        "cache_turnover_cost",
     }
     bloat = next(r for r in data["reports"] if r["analyzer"] == "tool_schema_bloat")
     assert bloat["leaked_tokens"] > 0
