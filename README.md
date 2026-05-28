@@ -20,6 +20,15 @@ Common flags:
     --min-confidence {low,mid,high}
     --strict                     abort on parser warnings
 
+## Schema discovery
+
+Before writing or updating a spec that depends on transcript shape, dump real
+sessions first:
+
+    uv run tlp schema-dump ~/.claude/projects/<slug>/<session>.jsonl
+
+See `docs/spec-checklist.md` for the full pre-spec workflow.
+
 ## Levers
 
 | name | bucket | what it catches |
@@ -28,8 +37,9 @@ Common flags:
 | redundant_restatement | input | near-duplicate text blocks (MinHash 5-gram) |
 | tool_schema_bloat | input | tool defs that are never called |
 | verbose_tool_results | input | tool output that's mostly never cited |
-| reasoning_overrun | output | thinking >> answer + duplicate sentences |
+| reasoning_overrun | output | thinking >> productive + duplicate sentences |
 | format_boilerplate | output | preambles/closers repeated across turns |
+| cache_miss_penalty | cache_creation | repeated cache invalidation pattern |
 
 ## Tests
 
