@@ -10,6 +10,7 @@ from tlp.analyzers import (  # noqa: F401  (imports trigger registration)
     subagent_context_overdump,
     system_prompt_audit,
     roundtrip_inflation,
+    tool_result_repetition,
 )
 
 __all__ = ["BaseAnalyzer", "registry"]

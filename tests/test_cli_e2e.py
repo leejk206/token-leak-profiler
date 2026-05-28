@@ -18,7 +18,7 @@ def test_analyze_json_output():
     assert r.returncode == 0, r.stderr
     data = json.loads(r.stdout)
     assert data["session_id"] == "s-bloat"
-    assert len(data["reports"]) == 9
+    assert len(data["reports"]) == 10
 
 
 def test_analyze_table_default():
@@ -55,6 +55,7 @@ def test_e2e_golden_bloat(tmp_path: Path):
         "verbose_tool_results", "reasoning_overrun", "format_boilerplate",
         "cache_turnover_cost", "subagent_context_overdump",
         "system_prompt_audit", "roundtrip_inflation",
+        "tool_result_repetition",
     }
     stale = next(r for r in data["reports"] if r["analyzer"] == "stale_context")
     assert isinstance(stale["leaked_tokens"], int)
