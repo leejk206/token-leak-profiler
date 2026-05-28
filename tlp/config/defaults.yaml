@@ -39,3 +39,4 @@ tool_result_repetition:
   min_repeat: 2
 mcp_server_overhead:
   estimated_tokens_per_tool_def: 200
+  min_use_ratio: 0.3

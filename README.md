@@ -56,6 +56,8 @@ v0.6.1 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/202
 |---|---|---|---|
 | mcp_server_overhead | input | activated MCP server with 0 calls this session (200 tok/tool heuristic, range 100-1000) | disable in settings (~/.claude/claude.json) |
 
+**MCP partial-use sub-case** (v0.7.0): a server with <30% of its tools used flags the unused subset (location format: `mcp_server[name].partial(unused/total)`). Catches Council Red Team Scenario B: servers like Bash with 80 commands where only 1 is ever called.
+
 ### Signal-only (6) — measurement, prescription unverified
 
 | name | bucket | what it measures |
@@ -68,6 +70,20 @@ v0.6.1 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/202
 | system_prompt_audit | input | stable system prompt > 15k tok |
 | roundtrip_inflation | input | consecutive short user messages |
 | tool_result_repetition | input | identical tool calls repeated |
+
+## Measurements (optional)
+
+Create `tlp/config/measurements.yaml` to supply empirically-measured tool token counts (e.g., from Anthropic's `count_tokens` API). When all tools of an unused MCP server are measured, `mcp_server_overhead` Findings promote from `estimated` → `confirmed`.
+
+Example:
+
+```yaml
+tools:
+  mcp__pal__chat: 312
+  mcp__pal__thinkdeep: 298
+```
+
+Pass via CLI: `uv run tlp analyze --measurements tlp/config/measurements.yaml <session.jsonl>`
 
 ## Tests
 
