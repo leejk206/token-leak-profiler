@@ -50,6 +50,12 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
             session_id = event.get("sessionId", "") or session_id
 
         ev_type = event.get("type")
+        # tools_changed events are real assistant messages with usage; normalize
+        # so they flow through the same pipeline. Global message.id dedup
+        # (later in second pass) prevents double-counting if any tools_changed
+        # shares an id with a prior assistant event.
+        if ev_type == "tools_changed":
+            ev_type = "assistant"
         msg = event.get("message")
 
         # ai-title: extract first non-empty title text, then continue (skip)

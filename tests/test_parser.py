@@ -109,3 +109,15 @@ def test_parse_label_none_when_no_ai_title():
     """The minimal fixture has no ai-title event."""
     t = parse(FIX)  # FIX is the existing minimal_trace.jsonl path constant
     assert t.label is None
+
+
+def test_parse_absorbs_tools_changed_as_assistant():
+    """tools_changed events carry real assistant messages with their own usage."""
+    fix = Path(__file__).parent / "fixtures" / "synthetic" / "tools_changed_trace.jsonl"
+    t = parse(fix)
+    # Three assistant turns
+    assistant_turns = [tr for tr in t.turns if tr.role == "assistant"]
+    assert len(assistant_turns) == 3
+    # Total output: 5 + 100 + 7 = 112 (was 12 in v0.2 because tools_changed was skipped)
+    total_output = sum(tr.usage.output_tokens for tr in assistant_turns if tr.usage)
+    assert total_output == 112
