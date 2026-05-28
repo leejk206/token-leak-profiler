@@ -36,22 +36,33 @@ def render_json(
         blended_input_rate = trace.pricing.input_per_mtok
 
     rendered_reports = []
-    total_effective_leak = 0.0
+    confirmed_total = 0.0
+    signal_total = 0.0
+    effective_total = 0.0
     for r in reports:
         bucket = bucket_map.get(r.analyzer, "input")
+        # Per-bucket nominal cost (cache-naive)
         cost = trace.pricing.cost(r.leaked_tokens, bucket)
-        # Effective cost accounts for prompt caching — input-bucket leaks ride the
-        # cache_read rate proportionally, output-bucket leaks are unchanged.
+        # Effective cost: blended input rate for input bucket, real rate for others
         if bucket == "input":
             effective_cost = r.leaked_tokens / 1_000_000 * blended_input_rate
         else:
             effective_cost = cost
-        total_effective_leak += effective_cost
+        effective_total += effective_cost
+        # Per-evidence-kind breakdown
+        confirmed_tok = r.confirmed_tokens
+        signal_tok = r.signal_tokens
+        confirmed_cost = trace.pricing.cost(confirmed_tok, bucket)
+        signal_cost = trace.pricing.cost(signal_tok, bucket)
+        confirmed_total += confirmed_cost
+        signal_total += signal_cost
         rendered_reports.append({
             "analyzer": r.analyzer,
             "lever": r.lever.value,
             "usage_bucket": bucket,
             "leaked_tokens": r.leaked_tokens,
+            "confirmed_tokens": confirmed_tok,
+            "signal_tokens": signal_tok,
             "leaked_cost_usd": cost,
             "effective_cost_usd": effective_cost,
             "findings": [asdict(f) for f in r.findings],
@@ -66,9 +77,11 @@ def render_json(
         "total_cache_read_tokens": total_cache_read,
         "total_cache_creation_tokens": total_cache_creation,
         "total_cost_usd": total_cost,
-        "tokenizer": {"mode": tokenizer_mode, "verify_drift_pct": verify_drift_pct},
+        "confirmed_leak_cost_usd": confirmed_total,
+        "signal_attention_cost_usd": signal_total,
+        "effective_leak_cost_usd": effective_total,
         "blended_input_rate_per_mtok": blended_input_rate,
-        "total_effective_leak_cost_usd": total_effective_leak,
+        "tokenizer": {"mode": tokenizer_mode, "verify_drift_pct": verify_drift_pct},
         "reports": rendered_reports,
     }
     return json.dumps(payload, ensure_ascii=False, indent=2)

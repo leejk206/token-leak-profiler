@@ -115,3 +115,59 @@ def test_table_includes_lever_rows_and_totals():
     assert "tool_schema_bloat" in output
     assert "compress this please" in output
     assert "drop tool" in output
+
+
+def test_json_includes_confirmed_and_signal_totals():
+    from tlp.types import LeakReport, LeverCategory, Finding
+    reports = [
+        LeakReport(
+            analyzer="stale_context", lever=LeverCategory.STALE_CONTEXT,
+            leaked_tokens=20, leaked_cost_usd=0.0,
+            findings=[Finding("turn[0]", 20, "mid", "compress", {}, "confirmed")],
+        ),
+        LeakReport(
+            analyzer="reasoning_overrun", lever=LeverCategory.REASONING_OVERRUN,
+            leaked_tokens=80, leaked_cost_usd=0.0,
+            findings=[Finding("turn[5]", 80, "low", "review", {}, "signal")],
+        ),
+    ]
+    out = render_json(_trace(), reports, bucket_map={
+        "stale_context": "input", "reasoning_overrun": "output"
+    })
+    data = json.loads(out)
+    assert "confirmed_leak_cost_usd" in data
+    assert "signal_attention_cost_usd" in data
+    assert "effective_leak_cost_usd" in data
+    # Confirmed cost is 20 × $3/Mtok = $0.00006
+    assert data["confirmed_leak_cost_usd"] == pytest.approx(20 * 3.0 / 1_000_000)
+    # Signal cost is 80 × $15/Mtok = $0.0012
+    assert data["signal_attention_cost_usd"] == pytest.approx(80 * 15.0 / 1_000_000)
+
+
+def test_json_per_report_breakdown_fields_present():
+    from tlp.types import LeakReport, LeverCategory, Finding
+    reports = [
+        LeakReport(
+            analyzer="reasoning_overrun", lever=LeverCategory.REASONING_OVERRUN,
+            leaked_tokens=100, leaked_cost_usd=0.0,
+            findings=[
+                Finding("a", 40, "mid", "x", {}, "confirmed"),
+                Finding("b", 60, "low", "x", {}, "signal"),
+            ],
+        ),
+    ]
+    out = render_json(_trace(), reports, bucket_map={"reasoning_overrun": "output"})
+    data = json.loads(out)
+    rpt = data["reports"][0]
+    assert rpt["confirmed_tokens"] == 40
+    assert rpt["signal_tokens"] == 60
+    assert rpt["findings"][0]["evidence_kind"] == "confirmed"
+    assert rpt["findings"][1]["evidence_kind"] == "signal"
+
+
+def test_json_no_longer_emits_total_effective_leak_cost_usd():
+    """v1's total_effective_leak_cost_usd is renamed to effective_leak_cost_usd."""
+    out = render_json(_trace(), [], bucket_map={})
+    data = json.loads(out)
+    assert "total_effective_leak_cost_usd" not in data
+    assert "effective_leak_cost_usd" in data
