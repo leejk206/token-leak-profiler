@@ -92,3 +92,19 @@ For any new metric or lever, the spec must answer THREE questions, not two:
 If the answer to (3) is "no" or "only partially", the metric must be framed neutrally (e.g. "cost" not "leak"), and the spec must categorize sub-cases by recoverability so the user can distinguish what's actionable from what's API mechanics.
 
 Reference: `docs/council/2026-05-29-cache-miss-penalty-deliberation.md`
+
+## Rule 5: Measurement → action 1:1 (added v0.4.0)
+
+새 메트릭을 추가하거나 기존 메트릭의 카테고리를 정할 때, 다음 문장이 spec에 명시되어야 한다:
+
+> "이 메트릭이 X 값을 보이면 사용자는 Y 행동을 취해서 그것을 줄일 수 있다."
+
+Y가 일반적으로 가능하지 않으면 (예: Anthropic API 메커니즘이라 사용자 통제 밖, Claude Code 내부 동작, 의도 추론 필요), 해당 메트릭은 **confirmed leak으로 분류 금지** — `evidence_kind="signal"`, `confidence="low"`로 signal-only 출력.
+
+이 룰은 lever 추가 시 + 기존 lever 재평가 시 모두 적용. 룰 자기-적용 일관성 검증을 위한 PR-time 자동 체크는 v0.4.1 backlog.
+
+**과거 사례:**
+- v0.2 cache_miss_penalty: 정상 conversation extension 누수 분류 → 룰 5 위반 → v0.3.2/3.3 fix
+- v0.3 stale_context: "참조 안 됨 = 안 필요" 가정 → 룰 5 위반 → v0.4.0 signal-only 격하
+- v0.3 verbose_tool_results: "인용 안 됨 = 안 필요" 가정 → 룰 5 위반 → v0.4.0 signal-only 격하
+- v0.3 reasoning_overrun.dup: thinking 통제권 미확인 → 룰 5 위반 → v0.4.0 signal-only 격하

@@ -35,15 +35,29 @@ See `docs/spec-checklist.md` for the full pre-spec workflow.
 
 ## Levers
 
-| name | bucket | what it catches |
-|---|---|---|
-| stale_context | input | message blocks unreferenced for N turns |
-| redundant_restatement | input | near-duplicate text blocks (MinHash 5-gram) |
-| tool_schema_bloat | input | tool defs that are never called |
-| verbose_tool_results | input | tool output that's mostly never cited |
-| reasoning_overrun | output | thinking >> productive + duplicate sentences |
-| format_boilerplate | output | preambles/closers repeated across turns |
-| cache_turnover_cost | cache_creation | cache turnover cost (recoverable + architectural mix) |
+v0.4.0 distinguishes **confirmed leak** (actionable, direct prescription verified) from **signal** (measurement without verified prescription — inspect before acting).
+
+Confirmed leak은 처방 검증된 누수입니다. Signals는 측정값이며 사용자가 검토 후 판단합니다.
+
+### Confirmed leak (3)
+
+| name | bucket | what it catches | prescription |
+|---|---|---|---|
+| format_boilerplate | output | preambles/closers repeated across turns | "no preamble" in system prompt or stop sequence |
+| cache_turnover_cost (recoverable) | cache_creation | TTL idle expiry (gap ≥ 300s) | reduce idle time |
+| redundant_restatement | input | near-duplicate text blocks (MinHash 5-gram, jaccard ≥ 0.9) | move to system prompt |
+
+### Signal-only (5) — measurement, prescription unverified
+
+| name | bucket | what it measures | why signal not confirmed |
+|---|---|---|---|
+| stale_context | input | blocks unreferenced for N turns | "unreferenced" ≠ "unnecessary" — may be cognitive context |
+| verbose_tool_results | input | tool output low citation ratio | "uncited" ≠ "unnecessary" — used for decision-making not echoed |
+| reasoning_overrun.dup | output | duplicate sentence in thinking | Claude Code thinking control verifiable? unclear |
+| reasoning_overrun.ratio | output | high thinking/output ratio | content not visible (redacted) |
+| cache_turnover_cost (architectural) | cache_creation | per-turn cache invalidation < 300s | Claude Code default behavior, not user-fixable |
+
+(`tool_schema_bloat` removed in v0.4.0 — Claude Code transcripts have no raw tool definitions; algorithm structurally inapplicable.)
 
 ## Tests
 
