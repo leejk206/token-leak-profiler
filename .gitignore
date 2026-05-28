@@ -1,10 +1,46 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual envs
 .venv/
+venv/
+env/
+
+# Test / lint caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-dist/
-*.egg-info/
 .coverage
+htmlcov/
+.tox/
+
+# uv
+.python-version
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Local dev
+*.log
+.env
+.env.local
+.env.*.local
+
+# Real fixtures (sanitize gate — keep this dir for placeholder but don't commit transcripts)
+tests/fixtures/real/*.jsonl
