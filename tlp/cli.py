@@ -25,10 +25,10 @@ def analyze(
     pricing_path: Optional[Path] = typer.Option(None, "--pricing", help="pricing.yaml override"),
     analyzers: Optional[str] = typer.Option(None, "--analyzers", help="comma-separated subset"),
     verify: bool = typer.Option(False, "--verify", help="verify with anthropic count_tokens"),
-    min_confidence: str = typer.Option("mid", "--min-confidence", help="low | mid | high"),
+    min_confidence: str = typer.Option("low", "--min-confidence", help="low | mid | high"),
     strict: bool = typer.Option(False, "--strict", help="abort on parse errors"),
 ) -> None:
-    """Analyze a Claude Code transcript for token leaks across 7 levers."""
+    """Analyze a Claude Code transcript for token leaks across 10 levers."""
     if not path.exists():
         typer.echo(f"error: file not found: {path}", err=True)
         raise typer.Exit(code=1)
