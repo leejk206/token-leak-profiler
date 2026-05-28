@@ -37,6 +37,7 @@ def render_json(
 
     rendered_reports = []
     confirmed_total = 0.0
+    estimated_total = 0.0
     signal_total = 0.0
     effective_total = 0.0
     for r in reports:
@@ -51,10 +52,13 @@ def render_json(
         effective_total += effective_cost
         # Per-evidence-kind breakdown
         confirmed_tok = r.confirmed_tokens
+        estimated_tok = r.estimated_tokens
         signal_tok = r.signal_tokens
         confirmed_cost = trace.pricing.cost(confirmed_tok, bucket)
+        estimated_cost = trace.pricing.cost(estimated_tok, bucket)
         signal_cost = trace.pricing.cost(signal_tok, bucket)
         confirmed_total += confirmed_cost
+        estimated_total += estimated_cost
         signal_total += signal_cost
         rendered_reports.append({
             "analyzer": r.analyzer,
@@ -62,6 +66,7 @@ def render_json(
             "usage_bucket": bucket,
             "leaked_tokens": r.leaked_tokens,
             "confirmed_tokens": confirmed_tok,
+            "estimated_tokens": estimated_tok,
             "signal_tokens": signal_tok,
             "leaked_cost_usd": cost,
             "effective_cost_usd": effective_cost,
@@ -78,6 +83,7 @@ def render_json(
         "total_cache_creation_tokens": total_cache_creation,
         "total_cost_usd": total_cost,
         "confirmed_leak_cost_usd": confirmed_total,
+        "estimated_leak_cost_usd": estimated_total,
         "signal_attention_cost_usd": signal_total,
         "effective_leak_cost_usd": effective_total,
         "blended_input_rate_per_mtok": blended_input_rate,

@@ -34,9 +34,14 @@ See `docs/spec-checklist.md` for the full pre-spec workflow.
 
 ## Levers (11)
 
-v0.6.0 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/2026-05-21-token-frugality): **6/6 (full coverage)**.
+v0.6.1 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/2026-05-21-token-frugality): **6/6 (per-session retrospective scope; blog originally described per-turn dynamic activation — see scope note)**.
 
-### Confirmed leak (5) — actionable, direct prescription verified
+> v0.6.1 introduces a 3-tier evidence model:
+> - **Confirmed**: measurement + actionable prescription
+> - **Estimated**: heuristic + actionable prescription (inspect evidence for assumptions)
+> - **Signal**: measurement without verified prescription
+
+### Confirmed leak (4) — measurement + actionable prescription
 
 | name | bucket | what it catches | prescription |
 |---|---|---|---|
@@ -44,7 +49,12 @@ v0.6.0 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/202
 | cache_turnover_cost (recoverable) | cache_creation | TTL idle expiry (gap ≥ 300s) | reduce idle time |
 | redundant_restatement | input | near-duplicate text blocks (jaccard ≥ 0.9) | move to system prompt |
 | subagent_context_overdump | input | subagent dispatch prompt > 5k tok | narrow scope on next dispatch |
-| mcp_server_overhead | input | activated MCP server with 0 calls this session | disable in settings (~/.claude/claude.json) |
+
+### Estimated leak (1) — heuristic + actionable prescription (inspect evidence for assumptions)
+
+| name | bucket | what it catches | prescription |
+|---|---|---|---|
+| mcp_server_overhead | input | activated MCP server with 0 calls this session (200 tok/tool heuristic, range 100-1000) | disable in settings (~/.claude/claude.json) |
 
 ### Signal-only (6) — measurement, prescription unverified
 

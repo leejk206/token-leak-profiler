@@ -54,17 +54,19 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
                 confidence=confidence,
                 suggestion=(
                     f"MCP server '{server}' has {activated_count} tools activated "
-                    f"but 0 called this session. Estimated overhead: {leaked} tok "
-                    f"in the cached system prompt. Disable in settings "
-                    f"(~/.claude/claude.json or claude code settings) if not needed."
+                    f"but 0 called this session. "
+                    f"Estimated overhead: {leaked} tok (heuristic 200 tok/tool, real range 100-1000). "
+                    f"Disable in settings (~/.claude/claude.json) if not needed."
                 ),
                 evidence={
                     "server_name": server,
                     "activated_tool_count": activated_count,
                     "called_count": 0,
                     "estimated_tokens_per_tool_def": est_per_tool,
+                    "estimation_basis": "heuristic 200 tok/tool, real range 100-1000 (v0.6 spec §14)",
+                    "tokens_per_tool_range_estimate": [100, 1000],
                 },
-                evidence_kind="confirmed",
+                evidence_kind="estimated",
             ))
 
         return LeakReport(

@@ -133,3 +133,26 @@ def test_parsed_trace_activated_tool_names_explicit():
         activated_tool_names=frozenset({"mcp__demo__a", "mcp__demo__b"}),
     )
     assert "mcp__demo__a" in t.activated_tool_names
+
+
+def test_evidence_kind_estimated_value():
+    from tlp.types import Finding
+    f = Finding(location="x", leaked_tokens=10, confidence="high", suggestion="x",
+                evidence_kind="estimated")
+    assert f.evidence_kind == "estimated"
+
+
+def test_leak_report_estimated_tokens_property():
+    from tlp.types import LeakReport, LeverCategory, Finding
+    r = LeakReport(
+        analyzer="x", lever=LeverCategory.MCP_SERVER_OVERHEAD,
+        leaked_tokens=200, leaked_cost_usd=0.0,
+        findings=[
+            Finding("a", 50, "high", "x", {}, "confirmed"),
+            Finding("b", 100, "high", "x", {}, "estimated"),
+            Finding("c", 50, "low", "x", {}, "signal"),
+        ],
+    )
+    assert r.confirmed_tokens == 50
+    assert r.estimated_tokens == 100
+    assert r.signal_tokens == 50

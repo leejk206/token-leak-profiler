@@ -248,6 +248,27 @@ def test_table_includes_v0_4_framing_line():
     assert "inspect before acting" in output.lower()
 
 
+def test_table_shows_estimated_leak_line():
+    buf = StringIO()
+    console = Console(file=buf, width=140, force_terminal=False, color_system=None)
+    trace = _trace()
+    reports = [
+        LeakReport(
+            analyzer="mcp_server_overhead", lever=LeverCategory.MCP_SERVER_OVERHEAD,
+            leaked_tokens=1000, leaked_cost_usd=0.0,
+            findings=[Finding("mcp_server[demo]", 1000, "high", "disable", {}, "estimated")],
+        ),
+    ]
+    render_table(
+        trace, reports,
+        bucket_map={"mcp_server_overhead": "input"},
+        console=console,
+    )
+    output = buf.getvalue()
+    assert "Estimated leak:" in output
+    assert "heuristic" in output.lower()
+
+
 def test_table_pct_includes_cache_buckets_in_denominator():
     """Regression: cache_turnover_cost leak should not produce >100% column."""
     from tlp.types import (

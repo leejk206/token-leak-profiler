@@ -22,7 +22,11 @@ BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]
 TurnRole = Literal["user", "assistant", "tool_result"]
 UsageBucket = Literal["input", "output", "cache_read", "cache_creation"]
 Confidence = Literal["low", "mid", "high"]
-EvidenceKind = Literal["confirmed", "signal"]
+# EvidenceKind semantics:
+#   confirmed:  measurement + verified 1:1 prescription
+#   estimated:  model output (heuristic) + verified 1:1 prescription
+#   signal:     measurement, prescription unverified
+EvidenceKind = Literal["confirmed", "estimated", "signal"]
 
 
 @dataclass(frozen=True)
@@ -109,6 +113,10 @@ class LeakReport:
     @property
     def confirmed_tokens(self) -> int:
         return sum(f.leaked_tokens for f in self.findings if f.evidence_kind == "confirmed")
+
+    @property
+    def estimated_tokens(self) -> int:
+        return sum(f.leaked_tokens for f in self.findings if f.evidence_kind == "estimated")
 
     @property
     def signal_tokens(self) -> int:

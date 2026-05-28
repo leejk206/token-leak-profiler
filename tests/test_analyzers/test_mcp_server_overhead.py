@@ -14,7 +14,8 @@ def test_flags_unused_mcp_server():
     f = r.findings[0]
     assert "demo" in f.location
     assert f.leaked_tokens == 1000  # 5 × 200
-    assert f.evidence_kind == "confirmed"
+    assert f.evidence_kind == "estimated"
+    assert "estimation_basis" in f.evidence
     assert f.evidence["activated_tool_count"] == 5
     assert f.evidence["called_count"] == 0
 

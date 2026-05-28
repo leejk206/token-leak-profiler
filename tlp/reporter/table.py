@@ -51,22 +51,26 @@ def render_table(
         if total_input_like > 0 else trace.pricing.input_per_mtok
     )
 
-    # Summary table: two columns (confirmed, signal) replace single tokens
+    # Summary table: three columns (confirmed, estimated, signal)
     summary = Table(box=box.SIMPLE_HEAVY, title="Leak by lever")
     summary.add_column("lever", style="cyan")
     summary.add_column("confirmed", justify="right")
+    summary.add_column("estimated", justify="right")
     summary.add_column("signal", justify="right")
     summary.add_column("cost ($)", justify="right")
     summary.add_column("% of total", justify="right")
     confirmed_total = 0.0
+    estimated_total = 0.0
     signal_total = 0.0
     effective_total = 0.0
     for r in sorted(reports, key=lambda x: x.leaked_tokens, reverse=True):
         bucket = bucket_map.get(r.analyzer, "input")
         cost = trace.pricing.cost(r.leaked_tokens, bucket)
         confirmed_cost = trace.pricing.cost(r.confirmed_tokens, bucket)
+        estimated_cost = trace.pricing.cost(r.estimated_tokens, bucket)
         signal_cost = trace.pricing.cost(r.signal_tokens, bucket)
         confirmed_total += confirmed_cost
+        estimated_total += estimated_cost
         signal_total += signal_cost
         if bucket == "input":
             effective_total += r.leaked_tokens / 1_000_000 * blended_input_rate
@@ -77,6 +81,7 @@ def render_table(
         summary.add_row(
             r.lever.value + marker,
             f"{r.confirmed_tokens:,}",
+            f"{r.estimated_tokens:,}",
             f"{r.signal_tokens:,}",
             f"{cost:.4f}",
             f"{pct:.1f}%",
@@ -84,12 +89,16 @@ def render_table(
     console.print(summary)
 
     console.print(
-        "[dim]Confirmed = actionable. Signals = measurements without "
-        "verified prescriptions; inspect before acting.[/dim]"
+        "[dim]Confirmed = measured + actionable. Estimated = heuristic + actionable. "
+        "Signals = measurement without verified prescription.[/dim]"
     )
     console.print(
         f"[bold]Confirmed leak:[/bold] "
-        f"${confirmed_total:.4f} [dim](actionable — direct prescription verified)[/dim]"
+        f"${confirmed_total:.4f} [dim](measured + actionable)[/dim]"
+    )
+    console.print(
+        f"[bold]Estimated leak:[/bold] "
+        f"${estimated_total:.4f} [dim](heuristic + actionable; inspect evidence for assumptions)[/dim]"
     )
     console.print(
         f"[bold]Attention signals:[/bold] "
@@ -117,6 +126,11 @@ def render_table(
         ftab.add_column("conf", justify="center")
         ftab.add_column("suggestion", overflow="fold")
         for f in r.findings[:findings_per_lever]:
-            kind_label = "CONF" if f.evidence_kind == "confirmed" else "SIG"
+            if f.evidence_kind == "confirmed":
+                kind_label = "CONF"
+            elif f.evidence_kind == "estimated":
+                kind_label = "EST"
+            else:
+                kind_label = "SIG"
             ftab.add_row(f.location, f"{f.leaked_tokens:,}", kind_label, f.confidence, f.suggestion)
         console.print(ftab)
