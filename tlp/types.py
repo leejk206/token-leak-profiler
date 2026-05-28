@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Literal, ClassVar
+from typing import Literal
 
 
 class LeverCategory(Enum):

@@ -1,8 +1,7 @@
 import pytest
 from dataclasses import FrozenInstanceError
 from tlp.types import (
-    Block, Turn, Usage, ToolDef, ParsedTrace,
-    LeverCategory, LeakReport, Finding, PricingTable,
+    Block, Turn, LeverCategory, LeakReport, Finding, PricingTable,
 )
 
 
