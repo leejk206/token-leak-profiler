@@ -17,6 +17,7 @@ BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]
 TurnRole = Literal["user", "assistant", "tool_result"]
 UsageBucket = Literal["input", "output", "cache_read", "cache_creation"]
 Confidence = Literal["low", "mid", "high"]
+EvidenceKind = Literal["confirmed", "signal"]
 
 
 @dataclass(frozen=True)
@@ -84,6 +85,7 @@ class Finding:
     confidence: Confidence
     suggestion: str
     evidence: dict = field(default_factory=dict)
+    evidence_kind: EvidenceKind = "confirmed"
 
 
 @dataclass
@@ -94,3 +96,11 @@ class LeakReport:
     leaked_cost_usd: float
     findings: list[Finding]
     error: str | None = None
+
+    @property
+    def confirmed_tokens(self) -> int:
+        return sum(f.leaked_tokens for f in self.findings if f.evidence_kind == "confirmed")
+
+    @property
+    def signal_tokens(self) -> int:
+        return sum(f.leaked_tokens for f in self.findings if f.evidence_kind == "signal")

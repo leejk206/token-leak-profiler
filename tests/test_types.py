@@ -5,6 +5,33 @@ from tlp.types import (
 )
 
 
+def test_finding_evidence_kind_default_is_confirmed():
+    f = Finding(location="x", leaked_tokens=10, confidence="mid", suggestion="x")
+    assert f.evidence_kind == "confirmed"
+
+
+def test_finding_evidence_kind_explicit_signal():
+    f = Finding(
+        location="x", leaked_tokens=10, confidence="low", suggestion="x",
+        evidence_kind="signal",
+    )
+    assert f.evidence_kind == "signal"
+
+
+def test_leak_report_breakdown_properties_sum_to_total():
+    r = LeakReport(
+        analyzer="x", lever=LeverCategory.STALE_CONTEXT,
+        leaked_tokens=100, leaked_cost_usd=0.0,
+        findings=[
+            Finding("a", 40, "mid", "x", {}, "confirmed"),
+            Finding("b", 60, "low", "x", {}, "signal"),
+        ],
+    )
+    assert r.confirmed_tokens == 40
+    assert r.signal_tokens == 60
+    assert r.confirmed_tokens + r.signal_tokens == r.leaked_tokens
+
+
 def test_block_is_frozen():
     b = Block(kind="text", text="hi", tool_name=None, tool_input=None, tool_use_id=None, tokens=1)
     with pytest.raises(FrozenInstanceError):
