@@ -9,6 +9,7 @@ so analyzers can target tool I/O directly.
 """
 from __future__ import annotations
 import json
+import logging
 from pathlib import Path
 from typing import Iterator
 
@@ -35,6 +36,7 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
             if strict:
                 raise ValueError(msg)
             warnings.append(msg)
+            logging.warning(msg)
             continue
 
         if not session_id:
@@ -43,12 +45,14 @@ def parse(path: Path, *, pricing: PricingTable | None = None, strict: bool = Fal
         ev_type = event.get("type")
         msg = event.get("message")
         if ev_type not in ("user", "assistant") or not isinstance(msg, dict):
-            warnings.append(f"line {line_no}: skipping type={ev_type!r}")
+            warning_msg = f"line {line_no}: skipping type={ev_type!r}"
+            warnings.append(warning_msg)
+            logging.warning(warning_msg)
             continue
 
         # Tool definitions can appear nested in assistant messages (system_tools)
-        # or as top-level field on event. Capture lazily.
-        for td in event.get("tools", []) or msg.get("tools", []) or []:
+        # or as top-level field on event. Capture from both; dedup by name below.
+        for td in (event.get("tools") or []) + (msg.get("tools") or []):
             name = td.get("name")
             if name and name not in tool_defs:
                 tool_defs[name] = ToolDef(
