@@ -47,17 +47,19 @@ class VerboseToolResultsAnalyzer(BaseAnalyzer):
                     findings.append(Finding(
                         location=f"turn[{ti}].blocks[{bi}]",
                         leaked_tokens=leak,
-                        confidence="mid",
+                        confidence="low",
                         suggestion=(
                             f"tool result ({b.tokens} tok) cited only {citation_ratio:.0%} in next "
-                            f"{window} turns — truncate or summarize before sending back"
+                            f"{window} turns — verify the output was actually unused for "
+                            f"decision-making before truncating; low citation can mean "
+                            f"'used for cognitive context but not echoed' rather than 'waste'"
                         ),
                         evidence={
                             "tool_use_id": b.tool_use_id,
                             "citation_ratio": round(citation_ratio, 3),
                             "result_tokens": b.tokens,
                         },
-                        evidence_kind="confirmed",
+                        evidence_kind="signal",
                     ))
 
         return LeakReport(

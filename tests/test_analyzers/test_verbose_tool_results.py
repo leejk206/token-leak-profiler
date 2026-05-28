@@ -11,6 +11,9 @@ def test_flags_verbose_tool_result():
     r = VerboseToolResultsAnalyzer().analyze(trace, load_defaults())
     assert any(f.evidence.get("tool_use_id") == "toolu_1" for f in r.findings)
     assert r.leaked_tokens > 0
+    # v0.4.0: signal-only
+    assert all(f.evidence_kind == "signal" for f in r.findings)
+    assert all(f.confidence == "low" for f in r.findings)
 
 
 def test_no_findings_when_cited():
