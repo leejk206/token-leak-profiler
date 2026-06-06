@@ -1,6 +1,6 @@
 from __future__ import annotations
 from tlp.analyzers.base import BaseAnalyzer
-from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding
+from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding, Confidence
 
 
 class SubagentContextOverdumpAnalyzer(BaseAnalyzer):
@@ -40,7 +40,7 @@ class SubagentContextOverdumpAnalyzer(BaseAnalyzer):
             )
 
         leaked = first_prompt_tokens - baseline
-        confidence = "high" if first_prompt_tokens > 20000 else "mid"
+        confidence: Confidence = "high" if first_prompt_tokens > 20000 else "mid"
         finding = Finding(
             location="subagent_prompt",
             leaked_tokens=leaked,

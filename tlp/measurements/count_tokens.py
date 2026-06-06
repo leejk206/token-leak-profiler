@@ -7,7 +7,8 @@ import yaml
 
 
 class _ClientLike(Protocol):
-    messages: Any
+    @property
+    def messages(self) -> Any: ...
 
 
 _BASELINE_MESSAGES = [{"role": "user", "content": "x"}]

@@ -24,5 +24,5 @@ def compute_drift_pct(
 def _count_via_anthropic(messages: list[dict], *, model: str) -> int:
     from anthropic import Anthropic  # imported lazily so it stays optional
     client = Anthropic()
-    resp = client.messages.count_tokens(model=model, messages=messages)
+    resp = client.messages.count_tokens(model=model, messages=messages)  # type: ignore[arg-type]
     return int(resp.input_tokens)

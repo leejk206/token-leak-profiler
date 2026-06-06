@@ -10,6 +10,7 @@ from tlp.parser import parse
 from tlp.analyzers import registry
 from tlp.config import load_defaults, load_pricing
 from tlp.reporter import render_table, render_json
+from tlp.types import UsageBucket
 from tlp.schema.dump import dump as schema_dump_run, render_text as schema_render_text, render_json as schema_render_json
 from tlp.aggregate import aggregate as aggregate_run, render_table as agg_render_table, render_json as agg_render_json
 
@@ -59,7 +60,7 @@ def analyze(
     min_rank = conf_rank.get(min_confidence, 1)
 
     reports = []
-    bucket_map: dict[str, str] = {}
+    bucket_map: dict[str, UsageBucket] = {}
     for cls in selected:
         bucket_map[cls.name] = cls.usage_bucket
         try:

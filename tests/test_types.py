@@ -52,6 +52,7 @@ def test_lever_category_v0_6_set():
         "subagent_context_overdump", "system_prompt_audit",
         "roundtrip_inflation", "tool_result_repetition",
         "mcp_server_overhead",
+        "cache_miss_penalty",
     }
 
 

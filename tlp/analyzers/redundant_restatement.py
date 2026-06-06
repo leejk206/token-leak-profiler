@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datasketch import MinHash, MinHashLSH
+from datasketch import MinHash, MinHashLSH  # type: ignore[import-untyped]
 from tlp.analyzers.base import BaseAnalyzer
 from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding
 

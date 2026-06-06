@@ -16,6 +16,7 @@ class LeverCategory(Enum):
     ROUNDTRIP_INFLATION = "roundtrip_inflation"
     TOOL_RESULT_REPETITION = "tool_result_repetition"
     MCP_SERVER_OVERHEAD = "mcp_server_overhead"
+    CACHE_MISS_PENALTY = "cache_miss_penalty"
 
 
 BlockKind = Literal["text", "tool_use", "tool_result", "thinking"]

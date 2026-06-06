@@ -31,7 +31,7 @@ class ToolResultRepetitionAnalyzer(BaseAnalyzer):
             if turn.role != "assistant":
                 continue
             for b in turn.blocks:
-                if b.kind != "tool_use" or not b.tool_name:
+                if b.kind != "tool_use" or not b.tool_name or b.tool_use_id is None:
                     continue
                 canonical = json.dumps(b.tool_input or {}, sort_keys=True, ensure_ascii=False)
                 groups[(b.tool_name, canonical)].append(b.tool_use_id)

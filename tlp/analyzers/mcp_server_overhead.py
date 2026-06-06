@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections import defaultdict
 from tlp.analyzers.base import BaseAnalyzer
-from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding
+from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding, Confidence, EvidenceKind
 
 
 class MCPServerOverheadAnalyzer(BaseAnalyzer):
@@ -42,7 +42,7 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
                 if b.kind == "tool_use" and b.tool_name:
                     called_names.add(b.tool_name)
 
-        def _compute_basis(tool_set: set[str]) -> tuple[int, str, str]:
+        def _compute_basis(tool_set: set[str]) -> tuple[int, str, EvidenceKind]:
             """Returns (leaked_tokens, basis, evidence_kind) for a set of unused tools."""
             if not tool_set:
                 return 0, "heuristic", "estimated"
@@ -70,7 +70,7 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
                 leaked, basis, evidence_kind = _compute_basis(activated_set)
                 covered = [t for t in activated_set if t in measurements]
                 coverage = len(covered) / total_count if total_count else 0.0
-                confidence = "high" if total_count >= 10 else "mid"
+                confidence: Confidence = "high" if total_count >= 10 else "mid"
                 findings.append(Finding(
                     location=f"mcp_server[{server}]",
                     leaked_tokens=leaked,
@@ -99,7 +99,7 @@ class MCPServerOverheadAnalyzer(BaseAnalyzer):
                 leaked, basis, evidence_kind = _compute_basis(unused_subset)
                 covered = [t for t in unused_subset if t in measurements]
                 coverage = len(covered) / unused_count if unused_count else 0.0
-                confidence = "high" if unused_count >= 10 else "mid"
+                confidence = "high" if unused_count >= 10 else "mid"  # Confidence (same scope as above)
                 findings.append(Finding(
                     location=f"mcp_server[{server}].partial({unused_count}/{total_count})",
                     leaked_tokens=leaked,

@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 from tlp.analyzers.base import BaseAnalyzer
 from tlp.analyzers._helpers import estimate_stable_prefix
-from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding
+from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding, Confidence
 
 
 class CacheTurnoverCostAnalyzer(BaseAnalyzer):
@@ -174,7 +174,7 @@ class CacheTurnoverCostAnalyzer(BaseAnalyzer):
         )
 
 
-def _confidence(count: int, total: int) -> str:
+def _confidence(count: int, total: int) -> Confidence:
     if count >= 5 or total > 50_000:
         return "high"
     elif count >= 2:

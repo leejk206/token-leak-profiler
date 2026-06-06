@@ -7,6 +7,7 @@ from tlp.analyzers import (  # noqa: F401  (imports trigger registration)
     reasoning_overrun,
     format_boilerplate,
     cache_turnover_cost,
+    cache_miss_penalty,
     subagent_context_overdump,
     system_prompt_audit,
     roundtrip_inflation,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from tlp.analyzers.base import BaseAnalyzer
-from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding
+from tlp.types import LeverCategory, LeakReport, ParsedTrace, Finding, Confidence
 
 
 class CacheMissPenaltyAnalyzer(BaseAnalyzer):
@@ -20,6 +20,8 @@ class CacheMissPenaltyAnalyzer(BaseAnalyzer):
     name = "cache_miss_penalty"
     lever = LeverCategory.CACHE_MISS_PENALTY
     usage_bucket = "cache_creation"
+    prescription = "Remove dynamic content from system prompt (timestamps, counters, session-meta) that shifts the stable prefix per turn"
+    measurement_basis = "measured"
 
     def analyze(self, trace: ParsedTrace, config: dict) -> LeakReport:
         c = config.get("cache_miss_penalty", {})
@@ -57,6 +59,7 @@ class CacheMissPenaltyAnalyzer(BaseAnalyzer):
         count = len(invalidations)
         mean = total // count
 
+        confidence: Confidence
         if count >= 5 or total > 50_000:
             confidence = "high"
         elif count >= 2:
