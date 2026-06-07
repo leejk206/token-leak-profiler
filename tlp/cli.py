@@ -29,7 +29,7 @@ def analyze(
     min_confidence: str = typer.Option("low", "--min-confidence", help="low | mid | high"),
     strict: bool = typer.Option(False, "--strict", help="abort on parse errors"),
 ) -> None:
-    """Analyze a Claude Code transcript for token leaks across 10 levers."""
+    """Analyze a Claude Code transcript for token leaks across 12 analyzers."""
     if not path.exists():
         typer.echo(f"error: file not found: {path}", err=True)
         raise typer.Exit(code=1)

@@ -26,7 +26,7 @@ Common flags:
 
     --format {table,json}        default: table
     --output PATH                write JSON to file
-    --analyzers a,b,c            run only these (default: all 10)
+    --analyzers a,b,c            run only these (default: all 12)
     --verify                     compare local tokenizer to anthropic API
     --min-confidence {low,mid,high}
                                  Recommended: start with `high` to see only confirmed/estimated leaks; use `low` for exploratory audits.
@@ -41,7 +41,7 @@ sessions first:
 
 See `docs/spec-checklist.md` for the full pre-spec workflow.
 
-## Levers (11)
+## Levers (12)
 
 v0.6.1 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/2026-05-21-token-frugality): **6/6 (per-session retrospective scope; blog originally described per-turn dynamic activation — see scope note)**.
 
@@ -50,12 +50,13 @@ v0.6.1 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/202
 > - **Estimated**: heuristic + actionable prescription (inspect evidence for assumptions)
 > - **Signal**: measurement without verified prescription
 
-### Confirmed leak (4) — measurement + actionable prescription
+### Confirmed leak (5) — measurement + actionable prescription
 
 | name | bucket | what it catches | prescription |
 |---|---|---|---|
 | format_boilerplate | output | preambles/closers repeated across turns | "no preamble" or stop sequence |
 | cache_turnover_cost (recoverable) | cache_creation | TTL idle expiry (gap ≥ 300s) | reduce idle time |
+| cache_miss_penalty | cache_creation | cached prefix invalidated (cache_read drops vs expected) | remove dynamic content from system prompt (timestamps, counters) |
 | redundant_restatement | input | near-duplicate text blocks (jaccard ≥ 0.9) | move to system prompt |
 | subagent_context_overdump | input | subagent dispatch prompt > 5k tok | narrow scope on next dispatch |
 
@@ -67,7 +68,7 @@ v0.6.1 aligned to the [blog 6-lever taxonomy](https://leejk.vercel.app/notes/202
 
 **MCP partial-use sub-case** (v0.7.0): a server with <30% of its tools used flags the unused subset (location format: `mcp_server[name].partial(unused/total)`). Catches Council Red Team Scenario B: servers like Bash with 80 commands where only 1 is ever called.
 
-### Signal-only (6) — measurement, prescription unverified
+### Signal-only (8) — measurement, prescription unverified
 
 | name | bucket | what it measures |
 |---|---|---|
