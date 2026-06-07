@@ -10,6 +10,14 @@ Measure actionable LLM token costs in Claude Code sessions.
 
     uv run tlp analyze ~/.claude/projects/<slug>/<session>.jsonl
 
+```bash
+# 확실한 진단만 보기 (signal-only 결과 제외)
+uv run tlp analyze --min-confidence high ~/.claude/projects/<slug>/<session>.jsonl
+
+# 특정 analyzer만 실행
+uv run tlp analyze --analyzers format_boilerplate,cache_turnover_cost <session.jsonl>
+```
+
 Aggregate multiple sessions in a project directory:
 
     uv run tlp aggregate ~/.claude/projects/<slug>/
@@ -21,6 +29,7 @@ Common flags:
     --analyzers a,b,c            run only these (default: all 10)
     --verify                     compare local tokenizer to anthropic API
     --min-confidence {low,mid,high}
+                                 Recommended: start with `high` to see only confirmed/estimated leaks; use `low` for exploratory audits.
     --strict                     abort on parser warnings
 
 ## Schema discovery
